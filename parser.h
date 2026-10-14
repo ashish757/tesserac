@@ -13,9 +13,10 @@ private:
     Token peekToken() const;
     std::unique_ptr<AstNode> parsePrimary();
     std::unique_ptr<AstNode> parseExpression();
+    std::unique_ptr<AstNode> parseVarStatement();
+    std::unique_ptr<AstNode> parseStatement();
+
 public:
     explicit Parser(std::vector<Token> inputTokens);
     std::unique_ptr<AstNode> parseProgram();
 };
-
-
