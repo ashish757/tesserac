@@ -1,22 +1,22 @@
 #include "lexer.h"
 #include "parser.h"
-#include "codeGenerator.h"
+#include "codegenerator.h"
 #include <iostream>
 #include <fstream>
 
 int main() {
-    std::string codeToCompile = "5 + 10 - 3";
+    std::string code = "var abc = 10+5-1;";
 
-    Lexer myLexer(codeToCompile);
-    std::vector<Token> lexedTokens = myLexer.tokenize();
+    Lexer lexer(code);
+    std::vector<Token> lexedTokens = lexer.tokenize();
 
-    Parser myParser(lexedTokens);
-    std::unique_ptr<AstNode> abstractSyntaxTree = myParser.parseProgram();
+    Parser parser(lexedTokens);
+    std::unique_ptr<AstNode> abstractSyntaxTree = parser.parseProgram();
 
     CodeGenerator myGenerator;
     std::string generatedCode = myGenerator.generateAssembly(abstractSyntaxTree.get());
 
-    std::ofstream outputFile("output.s");
+    std::ofstream outputFile("../output.s");
     if (outputFile.is_open()) {
         outputFile << generatedCode;
         outputFile.close();
