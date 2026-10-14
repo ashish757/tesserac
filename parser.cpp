@@ -1,0 +1,52 @@
+#include "parser.h"
+#include <iostream>
+#include <cstdlib>
+
+
+Parser::Parser(std::vector<Token> inputTokens) : tokens(std::move(inputTokens)), currentIndex(0) {}
+
+Token Parser::consumeToken() {
+    return tokens[currentIndex++];
+}
+
+Token Parser::peekToken() const {
+    if (currentIndex < tokens.size()) {
+        return tokens[currentIndex];
+    }
+    return {TokenType::endOfFile, ""};
+}
+
+std::unique_ptr<AstNode> Parser::parsePrimary() {
+    Token currentToken = consumeToken();
+    if (currentToken.type == TokenType::integer) {
+        return std::make_unique<IntegerLiteralNode>(currentToken.value);
+
+    }
+    std::cerr << "Syntax Error: Expected an integer\n";
+    exit(1);
+}
+
+std::unique_ptr<AstNode> Parser::parseExpression() {
+    std::unique_ptr<AstNode> leftNode = parsePrimary();
+
+    while (peekToken().type == TokenType::plus || peekToken().type == TokenType::minus) {
+        Token operatorToken = consumeToken();
+        std::unique_ptr<AstNode> rightNode = parsePrimary();
+
+        leftNode = std::make_unique<BinaryExpressionNode>(
+            operatorToken.value, std::move(leftNode), std::move(rightNode));
+    }
+    return leftNode;
+}
+
+
+std::unique_ptr<AstNode> Parser::parseProgram() {
+    std::unique_ptr<AstNode> abstractSyntaxTree = parseExpression();
+
+    if (peekToken().type != TokenType::endOfFile) {
+        std::cerr<<"Syntax Error : Expected end of file\n";
+        exit(1);
+    }
+
+    return abstractSyntaxTree;
+}
