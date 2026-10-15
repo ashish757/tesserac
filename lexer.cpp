@@ -28,7 +28,10 @@ std::vector<Token> Lexer::tokenize() {
 
             if (alphaString == "var") {
                 generatedTokens.push_back({TokenType::varKeyword, alphaString});
-            } else {
+            } else if (alphaString == "print") {
+                generatedTokens.push_back({TokenType::printKeyword, "print"});
+            }
+            else {
                 generatedTokens.push_back({TokenType::identifier, alphaString});
             }
             continue;

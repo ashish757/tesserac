@@ -78,6 +78,10 @@ std::unique_ptr<AstNode> Parser::parseStatement() {
         return parseVarStatement();
     }
 
+    if (peekToken().type == TokenType::printKeyword) {
+        return parsePrintStatement();
+    }
+
     std::unique_ptr<AstNode> expressionNode = parseExpression();
 
     Token semicolonToken = consumeToken();
@@ -96,4 +100,15 @@ std::unique_ptr<AstNode> Parser::parseProgram() {
         programNode->statements.push_back(parseStatement());
     }
     return programNode;
+}
+
+std::unique_ptr<AstNode> Parser::parsePrintStatement() {
+    consumeToken();
+    std::unique_ptr<AstNode> expressionNode = parseExpression();
+    Token semicolonToken = consumeToken();
+    if (semicolonToken.type != TokenType::semicolon) {
+        std::cerr<<"Syntax Error: Expected ';'\n";
+        exit(1);
+    }
+    return std::make_unique<PrintStatementNode>(std::move(expressionNode));
 }

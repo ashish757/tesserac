@@ -7,6 +7,7 @@ enum class TokenType {
     minus,
     identifier,
     varKeyword,
+    printKeyword,
     equals,
     semicolon,
     endOfFile

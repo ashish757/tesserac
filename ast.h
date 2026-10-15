@@ -45,3 +45,13 @@ public:
     std::string name;
     explicit IdentifierNode(std::string varName) : name(std::move(varName)) {}
 };
+
+class PrintStatementNode : public AstNode {
+public:
+    std::unique_ptr<AstNode> expressionNode;
+
+    explicit PrintStatementNode(std::unique_ptr<AstNode> expr)
+        : expressionNode(std::move(expr)) {}
+};
+
+
