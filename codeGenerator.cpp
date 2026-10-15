@@ -41,6 +41,14 @@ void CodeGenerator::generateNode(const AstNode* node) {
         }
         int offset = symbolTable[identifierNode->name];
         assemblyCode += "    ldr w0, [x29, #-" + std::to_string(offset) +  "]\n";
+    } else if (const auto* printNode = dynamic_cast<const PrintStatementNode*>(node)) {
+        generateNode(printNode->expressionNode.get());
+
+        assemblyCode += "    str w0, [sp]\n";
+        assemblyCode += "    adrp x0, formatString@PAGE\n";
+        assemblyCode += "    add x0, x0, formatString@PAGEOFF\n";
+        assemblyCode += "    bl _printf\n";
+
     }
     else {
         std::cerr << "Compilation Error: Unknown AST Node\n";
@@ -49,13 +57,18 @@ void CodeGenerator::generateNode(const AstNode* node) {
 }
 
 std::string CodeGenerator::generateAssembly(const AstNode* rootNode) {
-    assemblyCode = ".global _main\n.align 2\n_main:\n";
+    assemblyCode = ".data\n";
+    assemblyCode += "formatString: .asciz \"%d\\n\"\n";
+
+    assemblyCode += ".text\n";
+    assemblyCode += ".global _main\n.align 2\n_main:\n";
 
     assemblyCode += "    stp x29, x30, [sp, #-16]!\n";
     assemblyCode += "    mov x29, sp\n";
     assemblyCode += "    sub sp, sp, #256\n";
 
     generateNode(rootNode);
+
     assemblyCode += "    mov sp, x29\n";
     assemblyCode += "    ldp x29, x30, [sp], #16\n";
     assemblyCode += "    ret\n";
