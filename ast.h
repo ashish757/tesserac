@@ -2,6 +2,8 @@
 #include <string>
 #include <memory>
 #include <utility>
+#include <vector>
+
 
 class AstNode {
 public:
@@ -31,4 +33,9 @@ public:
 
     VarStatementNode(std::string name, std::unique_ptr<AstNode> expr)
         : variableName(std::move(name)), expressionNode(std::move(expr)) {}
+};
+
+class ProgramNode : public AstNode {
+public:
+    std::vector<std::unique_ptr<AstNode>> statements;
 };
