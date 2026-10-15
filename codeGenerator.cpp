@@ -5,7 +5,11 @@
 CodeGenerator::CodeGenerator() : currentStackOffset(0) {}
 
 void CodeGenerator::generateNode(const AstNode* node) {
-    if (const auto* integerNode = dynamic_cast<const IntegerLiteralNode*>(node)) {
+    if (const auto&  programNode = dynamic_cast<const ProgramNode*>(node)) {
+      for (const auto& statement : programNode->statements) {
+          generateNode(statement.get());
+      }
+    } else if (const auto* integerNode = dynamic_cast<const IntegerLiteralNode*>(node)) {
         assemblyCode += "    mov w0, #" + integerNode->value + "\n";
     } else if (const auto* binaryNode = dynamic_cast<const BinaryExpressionNode*>(node)) {
         generateNode(binaryNode->leftNode.get());

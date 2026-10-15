@@ -84,12 +84,10 @@ std::unique_ptr<AstNode> Parser::parseStatement() {
 }
 
 std::unique_ptr<AstNode> Parser::parseProgram() {
-    std::unique_ptr<AstNode> abstractSyntaxTree = parseStatement();
+    auto programNode = std::make_unique<ProgramNode>();
 
-    if (peekToken().type != TokenType::endOfFile) {
-        std::cerr << "Syntax Error: Expected end of file\n";
-        exit(1);
+    while (peekToken().type == TokenType::endOfFile) {
+        programNode->statements.push_back(parseStatement());
     }
-
-    return abstractSyntaxTree;
+    return programNode;
 }
