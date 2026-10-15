@@ -5,7 +5,7 @@
 #include <fstream>
 
 int main() {
-    std::string code = "var abc = 10+5-1;";
+    std::string code = "var first = 5 + 10; var second = first - 5;";
 
     Lexer lexer(code);
     std::vector<Token> lexedTokens = lexer.tokenize();

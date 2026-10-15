@@ -39,3 +39,9 @@ class ProgramNode : public AstNode {
 public:
     std::vector<std::unique_ptr<AstNode>> statements;
 };
+
+class IdentifierNode : public AstNode {
+public:
+    std::string name;
+    explicit IdentifierNode(std::string varName) : name(std::move(varName)) {}
+};

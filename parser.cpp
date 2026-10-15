@@ -17,10 +17,16 @@ Token Parser::peekToken() const {
 
 std::unique_ptr<AstNode> Parser::parsePrimary() {
     Token currentToken = consumeToken();
+
     if (currentToken.type == TokenType::integer) {
         return std::make_unique<IntegerLiteralNode>(currentToken.value);
     }
-    std::cerr << "Syntax Error: Expected an integer\n";
+
+    if (currentToken.type == TokenType::identifier) {
+        return std::make_unique<IdentifierNode>(currentToken.value);
+    }
+
+    std::cerr << "Syntax Error: Expected an integer or variable\n";
     exit(1);
 }
 
@@ -86,7 +92,7 @@ std::unique_ptr<AstNode> Parser::parseStatement() {
 std::unique_ptr<AstNode> Parser::parseProgram() {
     auto programNode = std::make_unique<ProgramNode>();
 
-    while (peekToken().type == TokenType::endOfFile) {
+    while (peekToken().type != TokenType::endOfFile) {
         programNode->statements.push_back(parseStatement());
     }
     return programNode;
