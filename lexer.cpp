@@ -30,12 +30,18 @@ std::vector<Token> Lexer::tokenize() {
                 generatedTokens.push_back({TokenType::varKeyword, alphaString});
             } else if (alphaString == "print") {
                 generatedTokens.push_back({TokenType::printKeyword, "print"});
+            } else if (alphaString == "if") {
+                generatedTokens.push_back({TokenType::ifKeyword, alphaString});
+            } else if (alphaString == "else") {
+                generatedTokens.push_back({TokenType::elseKeyword, alphaString});
             }
+
             else {
                 generatedTokens.push_back({TokenType::identifier, alphaString});
             }
             continue;
         }
+
 
         if (std::isdigit(currentChar)) {
             std::string numberLiteral = "";
@@ -61,12 +67,29 @@ std::vector<Token> Lexer::tokenize() {
         }
 
         if (currentChar == '=') {
+            if (currentIndex + 1 < sourceCode.length() && sourceCode[currentIndex + 1] == '=') {
+                generatedTokens.push_back({TokenType::doubleEquals, "=="});
+                currentIndex += 2;
+                continue;
+            }
             generatedTokens.push_back({TokenType::equals, "="});
             currentIndex++;
             continue;
         }
         if (currentChar == ';') {
             generatedTokens.push_back({TokenType::semicolon, ";"});
+            currentIndex++;
+            continue;
+        }
+
+        if (currentChar == '{') {
+            generatedTokens.push_back({TokenType::leftBrace, "{"});
+            currentIndex++;
+            continue;
+        }
+
+        if (currentChar == '}') {
+            generatedTokens.push_back({TokenType::rightBrace, "}"});
             currentIndex++;
             continue;
         }

@@ -33,7 +33,7 @@ std::unique_ptr<AstNode> Parser::parsePrimary() {
 std::unique_ptr<AstNode> Parser::parseExpression() {
     std::unique_ptr<AstNode> leftNode = parsePrimary();
 
-    while (peekToken().type == TokenType::plus || peekToken().type == TokenType::minus) {
+    while (peekToken().type == TokenType::plus || peekToken().type == TokenType::minus || peekToken().type == TokenType::doubleEquals) {
         Token operatorToken = consumeToken();
         std::unique_ptr<AstNode> rightNode = parsePrimary();
 
@@ -86,6 +86,10 @@ std::unique_ptr<AstNode> Parser::parseStatement() {
         return  parseAssignmentStatement();
     }
 
+    if (peekToken().type == TokenType::ifKeyword) {
+        return parseIfStatement();
+    }
+
     std::unique_ptr<AstNode> expressionNode = parseExpression();
 
     Token semicolonToken = consumeToken();
@@ -136,4 +140,45 @@ std::unique_ptr<AstNode> Parser::parseAssignmentStatement() {
         exit(1);
     }
     return std::make_unique<AssignmentNode>(identifierToken.value, std::move(expressionNode));
+}
+
+std::unique_ptr<BlockNode> Parser::parseBlock() {
+    Token leftBraceToken = consumeToken();
+    if (leftBraceToken.type != TokenType::leftBrace) {
+        std::cerr<<"Syntax Error: Expected '{'\n";
+        exit(1);
+    }
+
+    auto blockNode = std::make_unique<BlockNode>();
+
+    while (peekToken().type != TokenType::rightBrace && peekToken().type != TokenType::endOfFile) {
+        blockNode->statements.push_back(parseStatement());
+    }
+
+    Token rightBraceToken = consumeToken();
+    if (rightBraceToken.type != TokenType::rightBrace) {
+        std::cerr<<"Syntax Error: Expected '}'\n";
+        exit(1);
+    }
+
+    return blockNode;
+}
+
+std::unique_ptr<AstNode> Parser::parseIfStatement() {
+    consumeToken();
+
+    std::unique_ptr<AstNode> conditionNode = parseExpression();
+    std::unique_ptr<BlockNode> trueBlock = parseBlock();
+    std::unique_ptr<BlockNode> falseBlock = nullptr;
+
+    if (peekToken().type == TokenType::elseKeyword) {
+        consumeToken();
+
+        falseBlock = parseBlock();
+    }
+
+    return std::make_unique<IfStatementNode>(
+        std::move(conditionNode),
+        std::move(trueBlock),
+        std::move(falseBlock));
 }

@@ -62,3 +62,22 @@ public:
     AssignmentNode(std::string name, std::unique_ptr<AstNode> expr)
         : variableName(std::move(name)), expressionNode(std::move(expr)) {}
 };
+
+class BlockNode : public AstNode {
+public:
+    std::vector<std::unique_ptr<AstNode>> statements;
+};
+
+
+class IfStatementNode : public AstNode {
+public:
+    std::unique_ptr<AstNode> conditionNode;
+    std::unique_ptr<AstNode> trueBlock;
+    std::unique_ptr<AstNode> falseBlock;
+
+    IfStatementNode(
+        std::unique_ptr<AstNode> cond,
+        std::unique_ptr<AstNode> trueB,
+        std::unique_ptr<AstNode> falseB)
+            : conditionNode(std::move(cond)), trueBlock(std::move(trueB)), falseBlock(std::move(falseB)) {}
+};

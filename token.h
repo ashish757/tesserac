@@ -10,7 +10,13 @@ enum class TokenType {
     printKeyword,
     equals,
     semicolon,
-    endOfFile
+    endOfFile,
+
+    ifKeyword,
+    elseKeyword,
+    leftBrace,
+    rightBrace,
+    doubleEquals,
 };
 
 struct Token {
