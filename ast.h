@@ -54,4 +54,11 @@ public:
         : expressionNode(std::move(expr)) {}
 };
 
+class AssignmentNode : public AstNode {
+public:
+    std::string variableName;
+    std::unique_ptr<AstNode> expressionNode;
 
+    AssignmentNode(std::string name, std::unique_ptr<AstNode> expr)
+        : variableName(std::move(name)), expressionNode(std::move(expr)) {}
+};

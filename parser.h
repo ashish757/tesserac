@@ -16,6 +16,7 @@ private:
     std::unique_ptr<AstNode> parseVarStatement();
     std::unique_ptr<AstNode> parseStatement();
     std::unique_ptr<AstNode> parsePrintStatement();
+    std::unique_ptr<AstNode> parseAssignmentStatement();
 
 public:
     explicit Parser(std::vector<Token> inputTokens);

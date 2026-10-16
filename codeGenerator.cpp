@@ -49,6 +49,17 @@ void CodeGenerator::generateNode(const AstNode* node) {
         assemblyCode += "    add x0, x0, formatString@PAGEOFF\n";
         assemblyCode += "    bl _printf\n";
 
+    } else if (const auto* assignNode = dynamic_cast<const AssignmentNode*>(node)) {
+        generateNode(assignNode->expressionNode.get());
+
+        if (symbolTable.find(assignNode->variableName) == symbolTable.end()) {
+            std::cerr<<"Compilation Error: Undefined Variable\n";
+            exit(1);
+        }
+
+        int offset = symbolTable[assignNode->variableName];
+        assemblyCode += "   str w0, [x29, #-" + std::to_string(offset) + "]\n";
+
     }
     else {
         std::cerr << "Compilation Error: Unknown AST Node\n";

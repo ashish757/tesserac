@@ -82,6 +82,10 @@ std::unique_ptr<AstNode> Parser::parseStatement() {
         return parsePrintStatement();
     }
 
+    if (peekToken().type == TokenType::identifier) {
+        return  parseAssignmentStatement();
+    }
+
     std::unique_ptr<AstNode> expressionNode = parseExpression();
 
     Token semicolonToken = consumeToken();
@@ -111,4 +115,25 @@ std::unique_ptr<AstNode> Parser::parsePrintStatement() {
         exit(1);
     }
     return std::make_unique<PrintStatementNode>(std::move(expressionNode));
+}
+
+
+std::unique_ptr<AstNode> Parser::parseAssignmentStatement() {
+    Token identifierToken = consumeToken();
+
+    Token equalsToken = consumeToken();
+
+    if (equalsToken.type != TokenType::equals) {
+        std::cerr<<"Syntax Error: Expected '='\n";
+        exit(1);
+    }
+
+    std::unique_ptr<AstNode> expressionNode = parseExpression();
+
+    Token semicolonToken = consumeToken();
+    if (semicolonToken.type != TokenType::semicolon) {
+        std::cerr<<"Syntax Error: Expected ';'\n";
+        exit(1);
+    }
+    return std::make_unique<AssignmentNode>(identifierToken.value, std::move(expressionNode));
 }
