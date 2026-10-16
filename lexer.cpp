@@ -34,6 +34,8 @@ std::vector<Token> Lexer::tokenize() {
                 generatedTokens.push_back({TokenType::ifKeyword, alphaString});
             } else if (alphaString == "else") {
                 generatedTokens.push_back({TokenType::elseKeyword, alphaString});
+            } else if (alphaString == "while") {
+                generatedTokens.push_back({TokenType::whileKeyword, alphaString});
             }
 
             else {

@@ -30,6 +30,37 @@ std::unique_ptr<AstNode> Parser::parsePrimary() {
     exit(1);
 }
 
+std::unique_ptr<AstNode> Parser::parseStatement() {
+    if (peekToken().type == TokenType::varKeyword) {
+        return parseVarStatement();
+    }
+
+    if (peekToken().type == TokenType::printKeyword) {
+        return parsePrintStatement();
+    }
+
+    if (peekToken().type == TokenType::identifier) {
+        return  parseAssignmentStatement();
+    }
+
+    if (peekToken().type == TokenType::ifKeyword) {
+        return parseIfStatement();
+    }
+
+    if (peekToken().type == TokenType::whileKeyword) {
+        return parseWhileStatement();
+    }
+    std::unique_ptr<AstNode> expressionNode = parseExpression();
+
+    Token semicolonToken = consumeToken();
+    if (semicolonToken.type != TokenType::semicolon) {
+        std::cerr << "Syntax Error: Expected ';'\n";
+        exit(1);
+    }
+
+    return expressionNode;
+}
+
 std::unique_ptr<AstNode> Parser::parseExpression() {
     std::unique_ptr<AstNode> leftNode = parsePrimary();
 
@@ -73,33 +104,7 @@ std::unique_ptr<AstNode> Parser::parseVarStatement() {
     return std::make_unique<VarStatementNode>(identifierToken.value, std::move(expressionNode));
 }
 
-std::unique_ptr<AstNode> Parser::parseStatement() {
-    if (peekToken().type == TokenType::varKeyword) {
-        return parseVarStatement();
-    }
 
-    if (peekToken().type == TokenType::printKeyword) {
-        return parsePrintStatement();
-    }
-
-    if (peekToken().type == TokenType::identifier) {
-        return  parseAssignmentStatement();
-    }
-
-    if (peekToken().type == TokenType::ifKeyword) {
-        return parseIfStatement();
-    }
-
-    std::unique_ptr<AstNode> expressionNode = parseExpression();
-
-    Token semicolonToken = consumeToken();
-    if (semicolonToken.type != TokenType::semicolon) {
-        std::cerr << "Syntax Error: Expected ';'\n";
-        exit(1);
-    }
-
-    return expressionNode;
-}
 
 std::unique_ptr<AstNode> Parser::parseProgram() {
     auto programNode = std::make_unique<ProgramNode>();
@@ -181,4 +186,14 @@ std::unique_ptr<AstNode> Parser::parseIfStatement() {
         std::move(conditionNode),
         std::move(trueBlock),
         std::move(falseBlock));
+}
+
+
+std::unique_ptr<AstNode> Parser::parseWhileStatement() {
+    consumeToken();
+
+    std::unique_ptr<AstNode> conditionNode = parseExpression();
+    std::unique_ptr<BlockNode> loopBlock = parseBlock();
+
+    return std::make_unique<WhileStatementNode>(std::move(conditionNode), std::move(loopBlock));
 }

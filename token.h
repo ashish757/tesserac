@@ -17,6 +17,8 @@ enum class TokenType {
     leftBrace,
     rightBrace,
     doubleEquals,
+
+    whileKeyword,
 };
 
 struct Token {

@@ -1,6 +1,5 @@
-var limit = 10;
-if limit == 10 {
-    print 1;
-} else {
-    print 0;
+var counter = 3;
+while counter == 3 {
+    print counter;
+    counter = counter - 1;
 }

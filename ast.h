@@ -77,7 +77,17 @@ public:
 
     IfStatementNode(
         std::unique_ptr<AstNode> cond,
-        std::unique_ptr<AstNode> trueB,
-        std::unique_ptr<AstNode> falseB)
+        std::unique_ptr<AstNode> trueB,        std::unique_ptr<AstNode> falseB)
             : conditionNode(std::move(cond)), trueBlock(std::move(trueB)), falseBlock(std::move(falseB)) {}
+};
+
+class WhileStatementNode : public AstNode {
+public:
+    std::unique_ptr<AstNode> conditionNode;
+    std::unique_ptr<AstNode> loopBlock;
+
+    WhileStatementNode(
+        std::unique_ptr<AstNode> cond,
+        std::unique_ptr<AstNode> loopBlock)
+            : conditionNode(std::move(cond)), loopBlock(std::move(loopBlock)) {}
 };

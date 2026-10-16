@@ -87,6 +87,23 @@ void CodeGenerator::generateNode(const AstNode* node) {
         }
 
         assemblyCode += endLabel + ":\n";
+    } else if (const auto* whileNode = dynamic_cast<const WhileStatementNode*>(node)) {
+        int currentLabel = labelCounter++;
+        std::string startLabel = ".L_while_start_" + std::to_string(currentLabel);
+        std::string endLabel = ".L_while_end_" + std::to_string(currentLabel);
+
+        assemblyCode += startLabel + ":\n";
+
+        generateNode(whileNode->conditionNode.get());
+
+        assemblyCode += "    cmp w0, #0\n";
+        assemblyCode += "    b.eq " + endLabel + "\n";
+
+        generateNode(whileNode->loopBlock.get());
+
+        assemblyCode += "    b " + startLabel + "\n";
+
+        assemblyCode += endLabel + ":\n";
     }
     else {
         std::cerr << "Compilation Error: Unknown AST Node\n";
@@ -112,3 +129,4 @@ std::string CodeGenerator::generateAssembly(const AstNode* rootNode) {
     assemblyCode += "    ret\n";
     return assemblyCode;
 }
+

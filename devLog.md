@@ -42,5 +42,21 @@ the expression will be evaluated and stored into the myVar varibale
 - well as promised in last devlog now compiler executes multiple lines, very easy implementation (😭) jsut added a bunch of loops (you believe that).
 - well the actual implementation incldued some messing with register and assembly 
 - now you can also use a print keyword to print anything (just numbers for now, but everything because text is just bunch of numbers).
-- 
-- 
+
+
+# devlog 5, 16 oct
+- i think i am  a bit locked in today, 2nd dev log already
+- so if else implemented, 
+- scopes implemented (basically detected opening and closing curly brackets after if and else keyword)
+- the actual scope detections of local or global is my next target
+- while loop works now but run only once why? well beacuse i am a fool, i have not implemented the relational operator like > and <, only the equality, it looks like somthign this
+```
+var counter = 3;
+while counter == 3 {
+    print counter;
+    counter = counter - 1;
+}
+```
+- also the variables created inside a scope exists even in global scope i need to fix this because right now i have a big table which hold all the vars i need to find what is the standard complier way to create local and global scopes
+- and i forget one thing the file support for source code, earlier i used to write the source code as string in the main.cpp file directly
+- but now the compiler opens the source code file and reads it and give the output just like any other programing language (Hold  your breath Rust, ash is coming, {ash i name of my language})
