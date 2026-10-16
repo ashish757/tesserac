@@ -18,7 +18,7 @@
 - some registry shit is going on in assembly, i dont understand is completely, there is access to two register stack, which is used to execute all the arithmatic operations
 
 
-# devlog 14 oct
+# devlog  3, 14 oct
 ### refactored into three parts
 - lexer
 - parser
@@ -35,3 +35,12 @@
 the expression will be evaluated and stored into the myVar varibale
 
 > whats next, well right now i can only execute only one line, will make it multiline and also the varibales are just beign stored for now and cant be accessed as wished
+
+
+
+# devlog 4, 16 oct
+- well as promised in last devlog now compiler executes multiple lines, very easy implementation (😭) jsut added a bunch of loops (you believe that).
+- well the actual implementation incldued some messing with register and assembly 
+- now you can also use a print keyword to print anything (just numbers for now, but everything because text is just bunch of numbers).
+- 
+- 

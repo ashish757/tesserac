@@ -2,7 +2,7 @@
 #include <iostream>
 #include <cstdlib>
 
-CodeGenerator::CodeGenerator() : currentStackOffset(0) {}
+CodeGenerator::CodeGenerator() : currentStackOffset(0), labelCounter(0) {}
 
 void CodeGenerator::generateNode(const AstNode* node) {
     if (const auto&  programNode = dynamic_cast<const ProgramNode*>(node)) {
@@ -25,6 +25,9 @@ void CodeGenerator::generateNode(const AstNode* node) {
             assemblyCode += "    add w0, w0, w1\n";
         } else if (binaryNode->operatorSymbol == "-") {
             assemblyCode += "    sub w0, w0, w1\n";
+        } else if (binaryNode->operatorSymbol == "==") {
+            assemblyCode += "    cmp w0, w1\n";
+            assemblyCode += "    cset w0, eq\n";
         }
     } else if (const auto* varNode = dynamic_cast<const VarStatementNode*>(node)) {
         generateNode(varNode->expressionNode.get());
@@ -60,6 +63,30 @@ void CodeGenerator::generateNode(const AstNode* node) {
         int offset = symbolTable[assignNode->variableName];
         assemblyCode += "   str w0, [x29, #-" + std::to_string(offset) + "]\n";
 
+    } else if (const auto* blockNode = dynamic_cast<const BlockNode*>(node)) {
+        for (const auto& statement : blockNode->statements) {
+            generateNode(statement.get());
+        }
+    } else if (const auto* ifNode = dynamic_cast<const IfStatementNode*>(node)) {
+        int currentLabel = labelCounter++;
+
+        std::string elseLabel = ".L_else_" + std::to_string(currentLabel);
+        std::string endLabel = ".L_end_" + std::to_string(currentLabel);
+
+        generateNode(ifNode->conditionNode.get());
+        assemblyCode += "   cmp w0, #0\n";
+        assemblyCode += "   b.eq " + elseLabel + "\n";
+
+        generateNode(ifNode->trueBlock.get());
+        assemblyCode += "   b " + endLabel + "\n";
+
+        assemblyCode += elseLabel + ":\n";
+
+        if (ifNode->falseBlock) {
+            generateNode(ifNode->falseBlock.get());
+        }
+
+        assemblyCode += endLabel + ":\n";
     }
     else {
         std::cerr << "Compilation Error: Unknown AST Node\n";

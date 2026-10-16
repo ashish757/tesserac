@@ -1,17 +1,18 @@
 #pragma once
 #include "ast.h"
 #include <string>
-#include <map>
+#include <unordered_map>
 
 class CodeGenerator {
 private:
     std::string assemblyCode;
-    std::map<std::string, int> symbolTable;
+    std::unordered_map<std::string, int> symbolTable;
     int currentStackOffset;
+    int labelCounter;
 
-    void generateNode(const AstNode* node);
 
 public:
     CodeGenerator();
+    void generateNode(const AstNode* node);
     std::string generateAssembly(const AstNode* rootNode);
 };
