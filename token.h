@@ -9,6 +9,8 @@ enum class TokenType {
     varKeyword,
     printKeyword,
     equals,
+    lessThan,
+    greaterThan,
     semicolon,
     endOfFile,
 

@@ -39,6 +39,12 @@ void CodeGenerator::generateNode(const AstNode* node) {
         } else if (binaryNode->operatorSymbol == "==") {
             assemblyCode += "    cmp w0, w1\n";
             assemblyCode += "    cset w0, eq\n";
+        } else if (binaryNode->operatorSymbol == "<") {
+            assemblyCode += "    cmp w0, w1\n";
+            assemblyCode += "    cset w0, lt\n";
+        } else if (binaryNode->operatorSymbol == ">") {
+            assemblyCode += "    cmp w0, w1\n";
+            assemblyCode += "    cset w0, gt\n";
         }
     } else if (const auto* varNode = dynamic_cast<const VarStatementNode*>(node)) {
         generateNode(varNode->expressionNode.get());

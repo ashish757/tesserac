@@ -67,6 +67,16 @@ std::vector<Token> Lexer::tokenize() {
 
             continue;
         }
+        if (currentChar == '<') {
+            generatedTokens.push_back({TokenType::lessThan, "<"});
+            currentIndex++;
+            continue;
+        }
+        if (currentChar == '>') {
+            generatedTokens.push_back({TokenType::greaterThan, ">"});
+            currentIndex++;
+            continue;
+        }
 
         if (currentChar == '=') {
             if (currentIndex + 1 < sourceCode.length() && sourceCode[currentIndex + 1] == '=') {

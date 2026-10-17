@@ -69,7 +69,11 @@ std::unique_ptr<AstNode> Parser::parseStatement() {
 std::unique_ptr<AstNode> Parser::parseExpression() {
     std::unique_ptr<AstNode> leftNode = parsePrimary();
 
-    while (peekToken().type == TokenType::plus || peekToken().type == TokenType::minus || peekToken().type == TokenType::doubleEquals) {
+    while (peekToken().type == TokenType::plus ||
+        peekToken().type == TokenType::minus ||
+        peekToken().type == TokenType::lessThan ||
+        peekToken().type == TokenType::greaterThan ||
+        peekToken().type == TokenType::doubleEquals) {
         Token operatorToken = consumeToken();
         std::unique_ptr<AstNode> rightNode = parsePrimary();
 
