@@ -50,6 +50,11 @@ std::unique_ptr<AstNode> Parser::parseStatement() {
     if (peekToken().type == TokenType::whileKeyword) {
         return parseWhileStatement();
     }
+
+    if (peekToken().type == TokenType::leftBrace) {
+        return parseBlock();
+    }
+
     std::unique_ptr<AstNode> expressionNode = parseExpression();
 
     Token semicolonToken = consumeToken();

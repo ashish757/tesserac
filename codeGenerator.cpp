@@ -2,7 +2,18 @@
 #include <iostream>
 #include <cstdlib>
 
-CodeGenerator::CodeGenerator() : currentStackOffset(0), labelCounter(0) {}
+CodeGenerator::CodeGenerator() : currentStackOffset(0), labelCounter(0) {
+    environmentStack.push_back(std::unordered_map<std::string, int>());
+}
+
+int CodeGenerator::resolveVariable(const std::string& variableName) {
+    for (auto iterator = environmentStack.rbegin(); iterator != environmentStack.rend(); ++iterator) {
+        if (iterator->contains(variableName)) {
+            return iterator->at(variableName);
+        }
+    }
+    return -1;
+}
 
 void CodeGenerator::generateNode(const AstNode* node) {
     if (const auto&  programNode = dynamic_cast<const ProgramNode*>(node)) {
@@ -33,16 +44,17 @@ void CodeGenerator::generateNode(const AstNode* node) {
         generateNode(varNode->expressionNode.get());
 
         currentStackOffset += 16;
-        symbolTable[varNode->variableName] = currentStackOffset;
+        environmentStack.back()[varNode->variableName] = currentStackOffset;
 
         assemblyCode += "    str w0, [x29, #-" + std::to_string(currentStackOffset) + "]\n";
 
     } else if (const auto* identifierNode = dynamic_cast<const IdentifierNode*>(node)) {
-        if (symbolTable.find(identifierNode->name) == symbolTable.end()) {
+        int offset = resolveVariable(identifierNode->name);
+
+        if (offset == -1) {
             std::cerr<<"Compilation Error: Undefined Variable\n";
             exit(1);
         }
-        int offset = symbolTable[identifierNode->name];
         assemblyCode += "    ldr w0, [x29, #-" + std::to_string(offset) +  "]\n";
     } else if (const auto* printNode = dynamic_cast<const PrintStatementNode*>(node)) {
         generateNode(printNode->expressionNode.get());
@@ -54,19 +66,21 @@ void CodeGenerator::generateNode(const AstNode* node) {
 
     } else if (const auto* assignNode = dynamic_cast<const AssignmentNode*>(node)) {
         generateNode(assignNode->expressionNode.get());
+        int offset = resolveVariable(assignNode->variableName);
 
-        if (symbolTable.find(assignNode->variableName) == symbolTable.end()) {
+        if (offset == -1) {
             std::cerr<<"Compilation Error: Undefined Variable\n";
             exit(1);
         }
 
-        int offset = symbolTable[assignNode->variableName];
         assemblyCode += "   str w0, [x29, #-" + std::to_string(offset) + "]\n";
 
     } else if (const auto* blockNode = dynamic_cast<const BlockNode*>(node)) {
+        environmentStack.push_back(std::unordered_map<std::string,  int>());
         for (const auto& statement : blockNode->statements) {
             generateNode(statement.get());
         }
+        environmentStack.pop_back();
     } else if (const auto* ifNode = dynamic_cast<const IfStatementNode*>(node)) {
         int currentLabel = labelCounter++;
 
@@ -130,3 +144,8 @@ std::string CodeGenerator::generateAssembly(const AstNode* rootNode) {
     return assemblyCode;
 }
 
+/*
+
+
+
+ */

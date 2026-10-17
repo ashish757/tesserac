@@ -2,13 +2,16 @@
 #include "ast.h"
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 class CodeGenerator {
 private:
     std::string assemblyCode;
-    std::unordered_map<std::string, int> symbolTable;
+    std::vector<std::unordered_map<std::string, int>> environmentStack;
     int currentStackOffset;
     int labelCounter;
+
+    int resolveVariable(const std::string& variableName);
 
 
 public:
