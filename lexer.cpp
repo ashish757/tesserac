@@ -36,6 +36,10 @@ std::vector<Token> Lexer::tokenize() {
                 generatedTokens.push_back({TokenType::elseKeyword, alphaString});
             } else if (alphaString == "while") {
                 generatedTokens.push_back({TokenType::whileKeyword, alphaString});
+            } else if (alphaString == "fire") {
+                generatedTokens.push_back({TokenType::fnKeyword, alphaString});
+            } else if (alphaString == "return") {
+                generatedTokens.push_back({TokenType::returnKeyword, alphaString});
             }
 
             else {
@@ -105,8 +109,18 @@ std::vector<Token> Lexer::tokenize() {
             currentIndex++;
             continue;
         }
+        if (currentChar  == '(') {
+            generatedTokens.push_back({TokenType::leftParen, "("});
+            currentIndex++;
+            continue;
+        }
+        if (currentChar == ')') {
+            generatedTokens.push_back({TokenType::comma, ","});
+            currentIndex++;
+            continue;
+        }
 
-        std::cerr<<"Synatax Error: Unexpected Caharacter "<<currentChar<<"\n";
+        std::cerr<<"Synatax Error: Unexpected Character "<<currentChar<<"\n";
         exit(1);
     }
     generatedTokens.push_back({TokenType::endOfFile, ""});

@@ -3,24 +3,32 @@
 
 enum class TokenType {
     integer,
-    plus,
-    minus,
+
     identifier,
+
     varKeyword,
     printKeyword,
-    equals,
-    lessThan,
-    greaterThan,
-    semicolon,
-    endOfFile,
-
     ifKeyword,
     elseKeyword,
+    whileKeyword,
+    fnKeyword,
+    returnKeyword,
+
     leftBrace,
     rightBrace,
-    doubleEquals,
+    leftParen,
+    rightParen,
 
-    whileKeyword,
+    plus,
+    minus,
+    equals,
+    doubleEquals,
+    lessThan,
+    greaterThan,
+
+    comma,
+    semicolon,
+    endOfFile
 };
 
 struct Token {

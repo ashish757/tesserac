@@ -91,3 +91,36 @@ public:
         std::unique_ptr<AstNode> loopBlock)
             : conditionNode(std::move(cond)), loopBlock(std::move(loopBlock)) {}
 };
+
+class FunctionDeclarationNode: public AstNode {
+public:
+    std::string functionName;
+    std::vector<std::string> parameters;
+    std::unique_ptr<BlockNode> body;
+
+    FunctionDeclarationNode(
+        std::string name,
+        std::vector<std::string> params,
+        std::unique_ptr<BlockNode> block)
+    : functionName(std::move(name)), parameters(std::move(params)), body(std::move(block)) {}
+
+};
+
+class FunctionCallNode : public AstNode {
+public:
+    std::string functionName;
+    std::vector<std::unique_ptr<AstNode>> parameters;
+
+    FunctionCallNode(
+        std::string name,
+        std::vector<std::unique_ptr<AstNode>> params) : functionName(std::move(name)), parameters(std::move(params)) {}
+};
+
+
+class ReturnNode : public AstNode {
+public:
+    std::unique_ptr<AstNode> expressionNode;
+    explicit ReturnNode(std::unique_ptr<AstNode> expr)
+        : expressionNode(std::move(expr)) {}
+};
+

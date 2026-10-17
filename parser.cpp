@@ -22,9 +22,16 @@ std::unique_ptr<AstNode> Parser::parsePrimary() {
         return std::make_unique<IntegerLiteralNode>(currentToken.value);
     }
 
-    if (currentToken.type == TokenType::identifier) {
-        return std::make_unique<IdentifierNode>(currentToken.value);
+    if (peekToken().type == TokenType::identifier) {
+        std::string identifierName = consumeToken().value;
+
+        if (peekToken().type == TokenType::leftParen) {
+            return parseFunctionCall(identifierName);
+        }
+
+        return std::make_unique<IdentifierNode>(identifierName);
     }
+
 
     std::cerr << "Syntax Error: Expected an integer or variable\n";
     exit(1);
@@ -53,6 +60,12 @@ std::unique_ptr<AstNode> Parser::parseStatement() {
 
     if (peekToken().type == TokenType::leftBrace) {
         return parseBlock();
+    }
+    if (peekToken().type == TokenType::fnKeyword) {
+        return parseFunctionDeclaration();
+    }
+    if (peekToken().type == TokenType::returnKeyword) {
+        return parseReturnStatement();
     }
 
     std::unique_ptr<AstNode> expressionNode = parseExpression();
@@ -206,3 +219,59 @@ std::unique_ptr<AstNode> Parser::parseWhileStatement() {
 
     return std::make_unique<WhileStatementNode>(std::move(conditionNode), std::move(loopBlock));
 }
+
+std::unique_ptr<AstNode> Parser::parseFunctionDeclaration() {
+    consumeToken();
+    Token nameToken = consumeToken();
+    std::string functionName = nameToken.value;
+
+    consumeToken();
+
+    std::vector<std::string> parameters;
+
+    if (peekToken().type != TokenType::rightParen) {
+        parameters.push_back(consumeToken().value);
+        while (peekToken().type == TokenType::comma) {
+            consumeToken();
+            parameters.push_back(consumeToken().value);
+        }
+    }
+     consumeToken();
+
+    std::unique_ptr<BlockNode> body = parseBlock();
+    return std::make_unique<FunctionDeclarationNode>(functionName, std::move(parameters), std::move(body));
+}
+
+
+std::unique_ptr<AstNode> Parser::parseReturnStatement() {
+    consumeToken();
+
+    std::unique_ptr<AstNode> expressionNode = parseExpression();
+
+    Token semicolonToken = consumeToken();
+    if (semicolonToken.type != TokenType::semicolon) {
+        std::cerr<<"Syntax Error: Expected ';'\n";
+        exit(1);
+    }
+
+    return std::make_unique<ReturnNode>(std::move(expressionNode));
+}
+
+std::unique_ptr<AstNode> Parser::parseFunctionCall(const std::string& functionName) {
+    consumeToken();
+
+    std::vector<std::unique_ptr<AstNode>> arguments;
+
+    if (peekToken().type != TokenType::rightParen) {
+        arguments.push_back(parseExpression());
+        while (peekToken().type == TokenType::comma) {
+            consumeToken();
+            arguments.push_back(parseExpression());
+        }
+    }
+
+    consumeToken();
+    return std::make_unique<FunctionCallNode>(functionName, std::move(arguments));
+}
+
+
