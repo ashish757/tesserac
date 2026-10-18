@@ -4,6 +4,7 @@
 enum class TokenType {
     integer,
     floatLiteral,
+    stringLiteral,
     nullKeyword,
 
     identifier,

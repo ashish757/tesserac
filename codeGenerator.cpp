@@ -2,9 +2,9 @@
 #include <iostream>
 #include <cstdlib>
 
-CodeGenerator::CodeGenerator() : currentStackOffset(0), labelCounter(0), floatLiteralCounter(0) {
-    environmentStack.push_back(std::unordered_map<std::string, VariableContext >());
-    dataSection = ".data\nformatString: .asciz \"%d\\n\"\nfloatFormatString: .asciz \"%f\\n\"\n";
+CodeGenerator::CodeGenerator() : currentStackOffset(0), labelCounter(0), floatLiteralCounter(0), stringLiteralCounter(0) {
+    environmentStack.push_back(std::unordered_map<std::string, VariableContext>());
+    dataSection = ".data\nformatString: .asciz \"%d\\n\"\nfloatFormatString: .asciz \"%f\\n\"\nstringFormatString: .asciz \"%s\\n\"\n";
 }
 
 VariableContext CodeGenerator::resolveVariable(const std::string& variableName) {
@@ -32,6 +32,12 @@ void CodeGenerator::generateNode(const AstNode* node) {
         assemblyCode += "    add x0, x0, " + labelName + "@PAGEOFF\n";
         assemblyCode += "   ldr d0, [x0]\n";
 
+    } else if (const auto* stringNode = dynamic_cast<const StringLiteralNode*>(node)) {
+        std::string labelName = "string_lit_" + std::to_string(stringLiteralCounter++);
+
+        dataSection += labelName + ": .asciz \"" + stringNode->value + "\"\n";
+        assemblyCode += "    adrp x0, " + labelName + "@PAGE\n";
+        assemblyCode += "    add x0, x0, " + labelName + "@PAGEOFF\n";
     }
     else if (const auto* binaryNode = dynamic_cast<const BinaryExpressionNode*>(node)) {
         generateNode(binaryNode->leftNode.get());
@@ -66,7 +72,10 @@ void CodeGenerator::generateNode(const AstNode* node) {
 
         if (expressionType == "float") {
             assemblyCode += "    str d0, [x29, #-" + std::to_string(currentStackOffset) + "]\n";
-        } else {
+        } else if (expressionType == "string") {
+            assemblyCode += "    str x0, [x29, #-" + std::to_string(currentStackOffset) + "]\n";
+        }
+        else {
             assemblyCode += "    str w0, [x29, #-" + std::to_string(currentStackOffset) + "]\n";
         }
 
@@ -80,7 +89,9 @@ void CodeGenerator::generateNode(const AstNode* node) {
 
         if (variableContext.dataType == "float") {
             assemblyCode += "    ldr d0, [x29, #-" + std::to_string(variableContext.offset) + "]\n";
-        } else {
+        } else if (variableContext.dataType == "string") {
+            assemblyCode += "    ldr x0, [x29, #-" + std::to_string(variableContext.offset) + "]\n";
+        }else {
             assemblyCode += "    ldr w0, [x29, #-" + std::to_string(variableContext.offset) + "]\n";
         }
 
@@ -93,7 +104,14 @@ void CodeGenerator::generateNode(const AstNode* node) {
             assemblyCode += "    adrp x0, floatFormatString@PAGE\n";
             assemblyCode += "    add x0, x0, floatFormatString@PAGEOFF\n";
             assemblyCode += "    bl _printf\n";
-        } else {
+        }
+        else if (expressionType == "string") {
+            assemblyCode += "    str x0, [sp]\n";
+            assemblyCode += "    adrp x0, stringFormatString@PAGE\n";
+            assemblyCode += "    add x0, x0, stringFormatString@PAGEOFF\n";
+            assemblyCode += "    bl _printf\n";
+        }
+        else {
             assemblyCode += "    str w0, [sp]\n";
             assemblyCode += "    adrp x0, formatString@PAGE\n";
             assemblyCode += "    add x0, x0, formatString@PAGEOFF\n";
@@ -110,7 +128,10 @@ void CodeGenerator::generateNode(const AstNode* node) {
 
         if (variableContext.dataType == "float") {
             assemblyCode += "   str d0, [x29, #-" + std::to_string(variableContext.offset) + "]\n";
-        } else {
+        } else if (variableContext.dataType == "string") {
+            assemblyCode += "    str x0, [x29, #-" + std::to_string(variableContext.offset) + "]\n";
+        }
+        else {
             assemblyCode += "   str w0, [x29, #-" + std::to_string(variableContext.offset) + "]\n";
         }
     } else if (const auto* blockNode = dynamic_cast<const BlockNode*>(node)) {
@@ -205,7 +226,6 @@ void CodeGenerator::generateNode(const AstNode* node) {
 }
 
 std::string CodeGenerator::generateAssembly(const AstNode* rootNode) {
-    // 1. Clear the assembly code and build the executable text block first
     assemblyCode = "";
 
     assemblyCode += ".text\n";
@@ -215,14 +235,12 @@ std::string CodeGenerator::generateAssembly(const AstNode* rootNode) {
     assemblyCode += "    mov x29, sp\n";
     assemblyCode += "    sub sp, sp, #256\n";
 
-    // 2. Traverse the AST (this will dynamically populate dataSection with floats)
     generateNode(rootNode);
 
     assemblyCode += "    mov sp, x29\n";
     assemblyCode += "    ldp x29, x30, [sp], #16\n";
     assemblyCode += "    ret\n";
 
-    // 3. Prepend the fully populated dataSection to the top of the file
     return dataSection + "\n" + assemblyCode;
 }
 
@@ -232,6 +250,9 @@ std::string CodeGenerator::determineDataType(const AstNode* node) {
     }
     if (dynamic_cast<const FloatLiteralNode*>(node)) {
         return "float";
+    }
+    if (dynamic_cast<const StringLiteralNode*>(node)) {
+        return "string";
     }
     if (const auto* identifierNode = dynamic_cast<const IdentifierNode*>(node)) {
         return resolveVariable(identifierNode->name).dataType;

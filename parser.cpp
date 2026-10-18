@@ -24,6 +24,10 @@ std::unique_ptr<AstNode> Parser::parsePrimary() {
         return std::make_unique<FloatLiteralNode>(consumeToken().value);
     }
 
+    if (peekToken().type == TokenType::stringLiteral) {
+        return std::make_unique<StringLiteralNode>(consumeToken().value);
+    }
+
     if (peekToken().type == TokenType::nullKeyword) {
         consumeToken();
         return std::make_unique<NullNode>();
@@ -283,3 +287,11 @@ std::unique_ptr<AstNode> Parser::parseFunctionCall(const std::string& functionNa
 }
 
 
+/*
+
+
+
+
+
+
+*/

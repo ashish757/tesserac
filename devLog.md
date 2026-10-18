@@ -128,3 +128,59 @@ print a;
 - and then we iterate that vector in reverse order so that the newest created comes first
 - so technically both the global and local vars exists but the local one is guaranteed to be present after the global one and hence in reverser iteration we find it and return
 - and as soon as the block ends we just remove that whole unordered map from the stack clearing out the memary
+
+
+
+# Devlog 7, 18 oct
+
+### A lot happened
+- functions, data types, arguments, return values, null, string, int, float
+
+
+- since last time i am so down to write a dev log, i have taken another step towards the control flows and data
+- i mean data is all there is , everything in a language revolves around it
+
+## Functions
+so this has a lot of technical details
+- the syntax
+```
+fire funName(a, b) {
+    return a + b;
+}
+```
+### some bullshit
+- fire is used to create the function, why fire? when i started my aim was just a basic compiler and i named is TesseraC, is has that 'C' in last which indicated the c lang family of compilers
+- and later i just sort of made a mini programign language, i named the language ASH (after my name Ashish)
+- and fire and ash are related so, and also i am thinking of wood to be keyword for maybe creating classes or a dictionary like data type called log
+- basically wood, fire and ash themed, idk why but its gonna happen, its my language i can do anything
+
+#### Technicalities
+- so in theory implementing function required two things
+    - a local scoped stack to manage the local scope of function and clear it when function returns
+    - a direction to where the control of execution is supposed to go and where it has to come back to after execution
+
+`stp x29, x30, [sp, #-16]!`
+- this is assembly code for arm65, its is called prologue (i dont  know why)
+- `stp x29, x30` - this saves the registers data into the memory, x29 and x30 are the two being saved
+- [sp, #-16]! -> this basically calculates the memory address and updates the stack pointer
+
+After this as the current state of program is saved and we can safely run the function ans when the function is completed we load this state back into stack and registors
+
+`ldp x29, x30, [sp], 16)`
+- now this is referred as the epilogue (now i understand why they are called what they aree called)
+- ldp x29 x30 loads the both old data back from stack into the registers
+- and sp 16 handles memory address calculation and points to the previous location for continuing executing after function call
+
+# devlog 7 continued - 19 oct
+## Data Type
+- i also implemented support for data types, null, string, float, int
+- not in full action right now, as currently its neither stoically typed not dynamic, i dont knwo what it is i need to read about it.
+- if you test i know it will feel like dynamic typed but believe me its not even that, anyways my final goal is to make is static typed anyways
+
+### Technicalities
+- in here i basically has zero idea of how to do it
+- the float thing was done by i dont know some different hardware level thing by assembly
+- but i understood the string and null, string just uses a 64 bit pointer and stores the data into .dat section instead of stack
+
+
+- In case you are interested, the major problems i faced are the apple hardware bugs for implementing float and ignorance in string department

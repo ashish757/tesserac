@@ -18,6 +18,26 @@ std::vector<Token> Lexer::tokenize() {
             continue;
         }
 
+        if (currentChar == '"') {
+            std::string stringLiteral = "";
+            currentIndex++;
+
+            while (currentIndex < sourceCode.length() && sourceCode[currentIndex] != '"') {
+                stringLiteral += sourceCode[currentIndex];
+                currentIndex++;
+            }
+
+            if (currentIndex < sourceCode.length() && sourceCode[currentIndex] == '"') {
+                currentIndex++;
+            } else {
+                std::cerr<<"Syntax Error: looks like quote is missing in string initialization";
+                exit(1);
+            }
+
+            generatedTokens.push_back({TokenType::stringLiteral, stringLiteral});
+            continue;
+        }
+
         if (std::isalpha(currentChar)) {
             std::string alphaString = "";
 

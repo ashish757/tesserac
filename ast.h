@@ -132,3 +132,9 @@ public:
 
     explicit FloatLiteralNode(std::string val) : value(std::move(val)) {}
 };
+
+class StringLiteralNode : public AstNode {
+public:
+    std::string value;
+    explicit StringLiteralNode(std::string val) : value(std::move(val)) {}
+};

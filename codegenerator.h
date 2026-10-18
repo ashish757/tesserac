@@ -17,6 +17,7 @@ private:
     int labelCounter;
     std::string dataSection;
     int floatLiteralCounter;
+    int stringLiteralCounter;
 
 
     VariableContext resolveVariable(const std::string& variableName);
