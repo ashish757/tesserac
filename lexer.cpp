@@ -114,7 +114,12 @@ std::vector<Token> Lexer::tokenize() {
             currentIndex++;
             continue;
         }
-        if (currentChar == ')') {
+        if (currentChar  == ')') {
+            generatedTokens.push_back({TokenType::rightParen, "_"});
+            currentIndex++;
+            continue;
+        }
+        if (currentChar == ',') {
             generatedTokens.push_back({TokenType::comma, ","});
             currentIndex++;
             continue;

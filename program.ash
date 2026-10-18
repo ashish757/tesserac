@@ -1,5 +1,6 @@
-var counter = 5;
-while counter > 0 {
-    print counter;
-    counter = counter - 1;
+fire calculate(a, b) {
+    return a + b;
 }
+
+var result = calculate(10, 20);
+print result;

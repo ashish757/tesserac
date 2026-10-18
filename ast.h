@@ -109,11 +109,11 @@ public:
 class FunctionCallNode : public AstNode {
 public:
     std::string functionName;
-    std::vector<std::unique_ptr<AstNode>> parameters;
+    std::vector<std::unique_ptr<AstNode>> arguments;
 
     FunctionCallNode(
         std::string name,
-        std::vector<std::unique_ptr<AstNode>> params) : functionName(std::move(name)), parameters(std::move(params)) {}
+        std::vector<std::unique_ptr<AstNode>> params) : functionName(std::move(name)), arguments(std::move(params)) {}
 };
 
 

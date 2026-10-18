@@ -124,6 +124,46 @@ void CodeGenerator::generateNode(const AstNode* node) {
         assemblyCode += "    b " + startLabel + "\n";
 
         assemblyCode += endLabel + ":\n";
+    } else if (const auto* fnNode = dynamic_cast<const FunctionDeclarationNode*>(node)) {
+        int currentLabel = labelCounter++;
+        std::string skipLabel = ".L_skip_fn_" + std::to_string(currentLabel);
+
+        assemblyCode += "    b " + skipLabel + "\n";
+        assemblyCode += "_" + fnNode->functionName + ":\n";
+        assemblyCode += "    stp x29, x30, [sp, #-16]!\n";
+        assemblyCode += "    mov x29, sp\n";
+
+        environmentStack.push_back(std::unordered_map<std::string, int>());
+        int previousOffset = currentStackOffset;
+        currentStackOffset = 0;
+
+        for (size_t i =0; i  < fnNode->parameters.size(); i++) {
+            currentStackOffset += 16;
+            environmentStack.back()[fnNode->parameters[i]] = currentStackOffset;
+            assemblyCode += "    str w" + std::to_string(i) + ", [x29, #-" + std::to_string(currentStackOffset) + "]\n";
+        }
+        generateNode(fnNode->body.get());
+
+        assemblyCode += "    ldp x29, x30, [sp], 16\n";
+        assemblyCode += "    ret\n";
+
+        environmentStack.pop_back();
+        currentStackOffset = previousOffset;
+        assemblyCode += skipLabel + ":\n";
+    } else if (const auto* callNode = dynamic_cast<const FunctionCallNode*>(node)) {
+        for (size_t i =0; i< callNode->arguments.size(); i++) {
+            generateNode(callNode->arguments[i].get());
+            assemblyCode += "    str w0, [sp, #-16]!\n";
+        }
+        for (int i = callNode->arguments.size()-1; i>=0; i--) {
+            assemblyCode += "    ldr w" + std::to_string(i) + ", [sp], 16\n";
+        }
+
+        assemblyCode += "    bl _" + callNode->functionName + "\n";
+    } else if (const auto* returnNode = dynamic_cast<const ReturnNode*>(node)) {
+        generateNode(returnNode->expressionNode.get());
+        assemblyCode += "    ldp x29, x30, [sp], 16\n";
+        assemblyCode += "    ret\n";
     }
     else {
         std::cerr << "Compilation Error: Unknown AST Node\n";
@@ -149,9 +189,3 @@ std::string CodeGenerator::generateAssembly(const AstNode* rootNode) {
     assemblyCode += "    ret\n";
     return assemblyCode;
 }
-
-/*
-
-
-
- */

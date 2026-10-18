@@ -16,10 +16,8 @@ Token Parser::peekToken() const {
 }
 
 std::unique_ptr<AstNode> Parser::parsePrimary() {
-    Token currentToken = consumeToken();
-
-    if (currentToken.type == TokenType::integer) {
-        return std::make_unique<IntegerLiteralNode>(currentToken.value);
+    if (peekToken().type == TokenType::integer) {
+        return std::make_unique<IntegerLiteralNode>(consumeToken().value);
     }
 
     if (peekToken().type == TokenType::identifier) {
@@ -31,7 +29,6 @@ std::unique_ptr<AstNode> Parser::parsePrimary() {
 
         return std::make_unique<IdentifierNode>(identifierName);
     }
-
 
     std::cerr << "Syntax Error: Expected an integer or variable\n";
     exit(1);
@@ -46,10 +43,6 @@ std::unique_ptr<AstNode> Parser::parseStatement() {
         return parsePrintStatement();
     }
 
-    if (peekToken().type == TokenType::identifier) {
-        return  parseAssignmentStatement();
-    }
-
     if (peekToken().type == TokenType::ifKeyword) {
         return parseIfStatement();
     }
@@ -58,14 +51,20 @@ std::unique_ptr<AstNode> Parser::parseStatement() {
         return parseWhileStatement();
     }
 
-    if (peekToken().type == TokenType::leftBrace) {
-        return parseBlock();
-    }
     if (peekToken().type == TokenType::fnKeyword) {
         return parseFunctionDeclaration();
     }
+
     if (peekToken().type == TokenType::returnKeyword) {
         return parseReturnStatement();
+    }
+
+    if (peekToken().type == TokenType::leftBrace) {
+        return parseBlock();
+    }
+
+    if (peekToken().type == TokenType::identifier) {
+        return parseAssignmentStatement();
     }
 
     std::unique_ptr<AstNode> expressionNode = parseExpression();
