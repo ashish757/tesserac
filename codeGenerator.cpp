@@ -23,6 +23,8 @@ void CodeGenerator::generateNode(const AstNode* node) {
     } else if (const auto* integerNode = dynamic_cast<const IntegerLiteralNode*>(node)) {
         assemblyCode += "    mov w0, #" + integerNode->value + "\n";
     } else if (const auto* binaryNode = dynamic_cast<const BinaryExpressionNode*>(node)) {
+    } else if (const auto* nullNode = dynamic_cast<const NullNode*>(node)) {
+        assemblyCode += "    mov w0, #0\n";
         generateNode(binaryNode->leftNode.get());
 
         assemblyCode += "    str w0, [sp, #-16]!\n";

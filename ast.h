@@ -124,3 +124,4 @@ public:
         : expressionNode(std::move(expr)) {}
 };
 
+class NullNode  : public AstNode {};

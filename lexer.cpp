@@ -40,6 +40,8 @@ std::vector<Token> Lexer::tokenize() {
                 generatedTokens.push_back({TokenType::fnKeyword, alphaString});
             } else if (alphaString == "return") {
                 generatedTokens.push_back({TokenType::returnKeyword, alphaString});
+            } else if (alphaString == "null") {
+                generatedTokens.push_back({TokenType::nullKeyword, alphaString});
             }
 
             else {
