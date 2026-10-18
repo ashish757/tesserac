@@ -125,3 +125,10 @@ public:
 };
 
 class NullNode  : public AstNode {};
+
+class FloatLiteralNode : public AstNode {
+public:
+    std::string value;
+
+    explicit FloatLiteralNode(std::string val) : value(std::move(val)) {}
+};

@@ -2,17 +2,18 @@
 #include <iostream>
 #include <cstdlib>
 
-CodeGenerator::CodeGenerator() : currentStackOffset(0), labelCounter(0) {
-    environmentStack.push_back(std::unordered_map<std::string, int>());
+CodeGenerator::CodeGenerator() : currentStackOffset(0), labelCounter(0), floatLiteralCounter(0) {
+    environmentStack.push_back(std::unordered_map<std::string, VariableContext >());
+    dataSection = ".data\nformatString: .asciz \"%d\\n\"\nfloatFormatString: .asciz \"%f\\n\"\n";
 }
 
-int CodeGenerator::resolveVariable(const std::string& variableName) {
+VariableContext CodeGenerator::resolveVariable(const std::string& variableName) {
     for (auto iterator = environmentStack.rbegin(); iterator != environmentStack.rend(); ++iterator) {
         if (iterator->contains(variableName)) {
             return iterator->at(variableName);
         }
     }
-    return -1;
+    return {-1, "unknown"};
 }
 
 void CodeGenerator::generateNode(const AstNode* node) {
@@ -22,9 +23,17 @@ void CodeGenerator::generateNode(const AstNode* node) {
       }
     } else if (const auto* integerNode = dynamic_cast<const IntegerLiteralNode*>(node)) {
         assemblyCode += "    mov w0, #" + integerNode->value + "\n";
-    } else if (const auto* binaryNode = dynamic_cast<const BinaryExpressionNode*>(node)) {
     } else if (const auto* nullNode = dynamic_cast<const NullNode*>(node)) {
         assemblyCode += "    mov w0, #0\n";
+    } else if (const auto* floatNode= dynamic_cast<const FloatLiteralNode*>(node)) {
+        std::string labelName = "float_lit_" + std::to_string(floatLiteralCounter++);
+        dataSection += labelName + ": .double " + floatNode->value + "\n";
+        assemblyCode += "    adrp x0, " + labelName + "@PAGE\n";
+        assemblyCode += "    add x0, x0, " + labelName + "@PAGEOFF\n";
+        assemblyCode += "   ldr d0, [x0]\n";
+
+    }
+    else if (const auto* binaryNode = dynamic_cast<const BinaryExpressionNode*>(node)) {
         generateNode(binaryNode->leftNode.get());
 
         assemblyCode += "    str w0, [sp, #-16]!\n";
@@ -50,41 +59,62 @@ void CodeGenerator::generateNode(const AstNode* node) {
         }
     } else if (const auto* varNode = dynamic_cast<const VarStatementNode*>(node)) {
         generateNode(varNode->expressionNode.get());
+        std::string expressionType = determineDataType(varNode->expressionNode.get());
 
         currentStackOffset += 16;
-        environmentStack.back()[varNode->variableName] = currentStackOffset;
+        environmentStack.back()[varNode->variableName] = {currentStackOffset, expressionType};
 
-        assemblyCode += "    str w0, [x29, #-" + std::to_string(currentStackOffset) + "]\n";
+        if (expressionType == "float") {
+            assemblyCode += "    str d0, [x29, #-" + std::to_string(currentStackOffset) + "]\n";
+        } else {
+            assemblyCode += "    str w0, [x29, #-" + std::to_string(currentStackOffset) + "]\n";
+        }
 
     } else if (const auto* identifierNode = dynamic_cast<const IdentifierNode*>(node)) {
-        int offset = resolveVariable(identifierNode->name);
+        VariableContext variableContext = resolveVariable(identifierNode->name);
 
-        if (offset == -1) {
-            std::cerr<<"Compilation Error: Undefined Variable\n";
+        if (variableContext.offset == -1) {
+            std::cerr << "Compilation Error: Undefined Variable\n";
             exit(1);
         }
-        assemblyCode += "    ldr w0, [x29, #-" + std::to_string(offset) +  "]\n";
+
+        if (variableContext.dataType == "float") {
+            assemblyCode += "    ldr d0, [x29, #-" + std::to_string(variableContext.offset) + "]\n";
+        } else {
+            assemblyCode += "    ldr w0, [x29, #-" + std::to_string(variableContext.offset) + "]\n";
+        }
+
     } else if (const auto* printNode = dynamic_cast<const PrintStatementNode*>(node)) {
         generateNode(printNode->expressionNode.get());
+        std::string expressionType = determineDataType(printNode->expressionNode.get());
 
-        assemblyCode += "    str w0, [sp]\n";
-        assemblyCode += "    adrp x0, formatString@PAGE\n";
-        assemblyCode += "    add x0, x0, formatString@PAGEOFF\n";
-        assemblyCode += "    bl _printf\n";
-
+        if (expressionType == "float") {
+            assemblyCode += "    str d0, [sp]\n";
+            assemblyCode += "    adrp x0, floatFormatString@PAGE\n";
+            assemblyCode += "    add x0, x0, floatFormatString@PAGEOFF\n";
+            assemblyCode += "    bl _printf\n";
+        } else {
+            assemblyCode += "    str w0, [sp]\n";
+            assemblyCode += "    adrp x0, formatString@PAGE\n";
+            assemblyCode += "    add x0, x0, formatString@PAGEOFF\n";
+            assemblyCode += "    bl _printf\n";
+        }
     } else if (const auto* assignNode = dynamic_cast<const AssignmentNode*>(node)) {
         generateNode(assignNode->expressionNode.get());
-        int offset = resolveVariable(assignNode->variableName);
+        VariableContext variableContext = resolveVariable(assignNode->variableName);
 
-        if (offset == -1) {
-            std::cerr<<"Compilation Error: Undefined Variable\n";
+        if (variableContext.offset == -1) {
+            std::cerr << "Compilation Error: Undefined Variable\n";
             exit(1);
         }
 
-        assemblyCode += "   str w0, [x29, #-" + std::to_string(offset) + "]\n";
-
+        if (variableContext.dataType == "float") {
+            assemblyCode += "   str d0, [x29, #-" + std::to_string(variableContext.offset) + "]\n";
+        } else {
+            assemblyCode += "   str w0, [x29, #-" + std::to_string(variableContext.offset) + "]\n";
+        }
     } else if (const auto* blockNode = dynamic_cast<const BlockNode*>(node)) {
-        environmentStack.push_back(std::unordered_map<std::string,  int>());
+        environmentStack.push_back(std::unordered_map<std::string,  VariableContext>());
         for (const auto& statement : blockNode->statements) {
             generateNode(statement.get());
         }
@@ -135,13 +165,14 @@ void CodeGenerator::generateNode(const AstNode* node) {
         assemblyCode += "    stp x29, x30, [sp, #-16]!\n";
         assemblyCode += "    mov x29, sp\n";
 
-        environmentStack.push_back(std::unordered_map<std::string, int>());
+        environmentStack.push_back(std::unordered_map<std::string, VariableContext>());
         int previousOffset = currentStackOffset;
         currentStackOffset = 0;
 
-        for (size_t i =0; i  < fnNode->parameters.size(); i++) {
+        for (size_t i = 0; i < fnNode->parameters.size(); i++) {
             currentStackOffset += 16;
-            environmentStack.back()[fnNode->parameters[i]] = currentStackOffset;
+            environmentStack.back()[fnNode->parameters[i]] = {currentStackOffset, "int"};
+
             assemblyCode += "    str w" + std::to_string(i) + ", [x29, #-" + std::to_string(currentStackOffset) + "]\n";
         }
         generateNode(fnNode->body.get());
@@ -174,8 +205,8 @@ void CodeGenerator::generateNode(const AstNode* node) {
 }
 
 std::string CodeGenerator::generateAssembly(const AstNode* rootNode) {
-    assemblyCode = ".data\n";
-    assemblyCode += "formatString: .asciz \"%d\\n\"\n";
+    // 1. Clear the assembly code and build the executable text block first
+    assemblyCode = "";
 
     assemblyCode += ".text\n";
     assemblyCode += ".global _main\n.align 2\n_main:\n";
@@ -184,10 +215,26 @@ std::string CodeGenerator::generateAssembly(const AstNode* rootNode) {
     assemblyCode += "    mov x29, sp\n";
     assemblyCode += "    sub sp, sp, #256\n";
 
+    // 2. Traverse the AST (this will dynamically populate dataSection with floats)
     generateNode(rootNode);
 
     assemblyCode += "    mov sp, x29\n";
     assemblyCode += "    ldp x29, x30, [sp], #16\n";
     assemblyCode += "    ret\n";
-    return assemblyCode;
+
+    // 3. Prepend the fully populated dataSection to the top of the file
+    return dataSection + "\n" + assemblyCode;
+}
+
+std::string CodeGenerator::determineDataType(const AstNode* node) {
+    if (dynamic_cast<const IntegerLiteralNode*>(node)) {
+        return "int";
+    }
+    if (dynamic_cast<const FloatLiteralNode*>(node)) {
+        return "float";
+    }
+    if (const auto* identifierNode = dynamic_cast<const IdentifierNode*>(node)) {
+        return resolveVariable(identifierNode->name).dataType;
+    }
+    return "int";
 }

@@ -19,6 +19,11 @@ std::unique_ptr<AstNode> Parser::parsePrimary() {
     if (peekToken().type == TokenType::integer) {
         return std::make_unique<IntegerLiteralNode>(consumeToken().value);
     }
+
+    if (peekToken().type == TokenType::floatLiteral) {
+        return std::make_unique<FloatLiteralNode>(consumeToken().value);
+    }
+
     if (peekToken().type == TokenType::nullKeyword) {
         consumeToken();
         return std::make_unique<NullNode>();

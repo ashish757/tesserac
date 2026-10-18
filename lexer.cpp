@@ -53,11 +53,23 @@ std::vector<Token> Lexer::tokenize() {
 
         if (std::isdigit(currentChar)) {
             std::string numberLiteral = "";
-            while (currentIndex < sourceCode.length() && std::isdigit(sourceCode[currentIndex])) {
+            bool hasDecimal = false;
+
+            while (currentIndex < sourceCode.length() && (std::isdigit(sourceCode[currentIndex]) || sourceCode[currentIndex] == '.')) {
+                if (sourceCode[currentIndex] == '.') {
+                    if (hasDecimal) {
+                        break;
+                    }
+                    hasDecimal = true;
+                }
                 numberLiteral += sourceCode[currentIndex];
                 currentIndex++;
             }
-            generatedTokens.push_back({TokenType::integer, numberLiteral});
+            if (hasDecimal) {
+                generatedTokens.push_back({TokenType::floatLiteral, numberLiteral});
+            } else {
+                generatedTokens.push_back({TokenType::integer, numberLiteral});
+            }
             continue;
         }
 
