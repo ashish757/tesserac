@@ -243,7 +243,25 @@ void CodeGenerator::generateNode(const AstNode* node) {
         assemblyCode += "    b " + startLabel + "\n";
 
         assemblyCode += endLabel + ":\n";
-    } else if (const auto* fnNode = dynamic_cast<const FunctionDeclarationNode*>(node)) {
+    }
+
+    else if (dynamic_cast<const BreakNode*>(node)) {
+        if (loopStack.empty()) {
+            std::cerr<<"Compilation Error: break statement outside of the loop\n";
+            exit(1);
+        }
+        assemblyCode += "    b " + loopStack.back().second;
+    }
+    else if (dynamic_cast<const ContinueNode*>(node)) {
+        if (loopStack.empty()) {
+            std::cerr<<"Compilation Error: continue statement outside of the loop\n";
+            exit(1);
+        }
+
+        assemblyCode += "    b " + loopStack.back().second;
+    }
+
+    else if (const auto* fnNode = dynamic_cast<const FunctionDeclarationNode*>(node)) {
         int currentLabel = labelCounter++;
         std::string skipLabel = ".L_skip_fn_" + std::to_string(currentLabel);
 
@@ -284,6 +302,27 @@ void CodeGenerator::generateNode(const AstNode* node) {
         generateNode(returnNode->expressionNode.get());
         assemblyCode += "    ldp x29, x30, [sp], 16\n";
         assemblyCode += "    ret\n";
+    } else if (const auto* whileNode = dynamic_cast<const WhileStatementNode*>(node)) {
+        int currentLabel = labelCounter++;
+        std::string startLabel = ".L_while_start_" + std::to_string(currentLabel);
+        std::string endLabel = ".L_while_end_" + std::to_string(currentLabel);
+
+        assemblyCode += startLabel + ":\n";
+
+        generateNode(whileNode->conditionNode.get());
+
+        assemblyCode += "    cmp w0, #0\n";
+        assemblyCode += "    b.eq " + endLabel + "\n";
+
+        loopStack.push_back({startLabel, endLabel});
+
+        generateNode(whileNode->loopBlock.get());
+
+        loopStack.pop_back();
+
+        assemblyCode += "    b " + startLabel + "\n";
+        assemblyCode += endLabel + ":\n";
+
     }
     else {
         std::cerr << "Compilation Error: Unknown AST Node\n";

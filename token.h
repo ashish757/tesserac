@@ -40,6 +40,9 @@ enum class TokenType {
     logicalOr,
     increment,
     decrement,
+    
+    breakKeyword,
+    continueKeyword,
 };
 
 struct Token {

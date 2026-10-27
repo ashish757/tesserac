@@ -158,3 +158,8 @@ public:
     std::string value;
     explicit StringLiteralNode(std::string val) : value(std::move(val)) {}
 };
+
+
+class BreakNode :  public AstNode {};
+
+class ContinueNode : public AstNode {};

@@ -62,6 +62,10 @@ std::vector<Token> Lexer::tokenize() {
                 generatedTokens.push_back({TokenType::returnKeyword, alphaString});
             } else if (alphaString == "null") {
                 generatedTokens.push_back({TokenType::nullKeyword, alphaString});
+            } else if (alphaString == "break") {
+                generatedTokens.push_back({TokenType::breakKeyword, alphaString});
+            } else if (alphaString == "continue") {
+                generatedTokens.push_back({TokenType::continueKeyword, alphaString});
             }
 
             else {

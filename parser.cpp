@@ -75,6 +75,31 @@ std::unique_ptr<AstNode> Parser::parseStatement() {
         return parseBlock();
     }
 
+    if (peekToken().type == TokenType::breakKeyword) {
+       consumeToken();
+        Token semiColonToken = consumeToken();
+        if (semiColonToken.type != TokenType::semicolon) {
+            std::cerr<<"Syntax Error: Expected ';' \n";
+            exit(1);
+        }
+        return std::make_unique<BreakNode>();
+
+    }
+
+
+    if (peekToken().type == TokenType::continueKeyword) {
+        consumeToken();
+
+        Token semiCommaToken = consumeToken();
+        if (semiCommaToken.type != TokenType::semicolon) {
+            std::cerr<<"Syntax Error: Expected ';' \n";
+            exit(1);
+
+        }
+
+        return std::make_unique<ContinueNode>();
+    }
+
     if (peekToken().type == TokenType::identifier) {
         if (currentIndex + 1 < tokens.size() && tokens[currentIndex + 1].type == TokenType::equals) {
             return parseAssignmentStatement();

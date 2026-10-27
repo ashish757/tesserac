@@ -18,6 +18,7 @@ private:
     std::string dataSection;
     int floatLiteralCounter;
     int stringLiteralCounter;
+    std::vector<std::pair<std::string, std::string>> loopStack;
 
 
     VariableContext resolveVariable(const std::string& variableName);
