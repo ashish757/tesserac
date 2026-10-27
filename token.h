@@ -31,7 +31,15 @@ enum class TokenType {
 
     comma,
     semicolon,
-    endOfFile
+    endOfFile,
+
+    star,
+    slash,
+    modulo,
+    logicalAnd,
+    logicalOr,
+    increment,
+    decrement,
 };
 
 struct Token {

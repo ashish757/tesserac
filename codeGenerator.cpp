@@ -53,7 +53,19 @@ void CodeGenerator::generateNode(const AstNode* node) {
             assemblyCode += "    add w0, w0, w1\n";
         } else if (binaryNode->operatorSymbol == "-") {
             assemblyCode += "    sub w0, w0, w1\n";
-        } else if (binaryNode->operatorSymbol == "==") {
+        }
+        else if (binaryNode->operatorSymbol == "*") {
+            assemblyCode += "    mul w0, w0, w1\n";
+        }
+        else if (binaryNode->operatorSymbol == "/") {
+            assemblyCode += "    sdiv w0, w0, w1\n";
+        }
+        else if (binaryNode->operatorSymbol == "%") {
+            assemblyCode += "    sdiv w2, w0, w1\n";
+            assemblyCode += "    msub w0, w2, w1, w0\n";
+
+        }
+        else if (binaryNode->operatorSymbol == "==") {
             assemblyCode += "    cmp w0, w1\n";
             assemblyCode += "    cset w0, eq\n";
         } else if (binaryNode->operatorSymbol == "<") {
@@ -63,7 +75,61 @@ void CodeGenerator::generateNode(const AstNode* node) {
             assemblyCode += "    cmp w0, w1\n";
             assemblyCode += "    cset w0, gt\n";
         }
-    } else if (const auto* varNode = dynamic_cast<const VarStatementNode*>(node)) {
+    }
+    else if (const auto* logicalNode = dynamic_cast<const LogicalExpressionNode*>(node)) {
+        int currentLabel = labelCounter++;
+
+
+        std::string shortCircuitLabel= ".L_shortcircuit_" + std::to_string(currentLabel);
+        std::string endLabel = ".L_logical_end_" + std::to_string(currentLabel);
+
+        generateNode(logicalNode->leftNode.get());
+
+        assemblyCode += "    cmp w0, #0\n";
+
+        if (logicalNode->operatorSymbol == "&&") {
+            assemblyCode += "    b.eq " + shortCircuitLabel + "\n";
+        }   else {
+            assemblyCode += "    b.ne " + shortCircuitLabel + "\n";
+        }
+
+
+        generateNode(logicalNode->rightNode.get());
+        assemblyCode += "   cmp w0, #0\n";
+        assemblyCode += "   cset w0, ne\n";
+        assemblyCode += "   b " + endLabel + "\n";
+
+        assemblyCode += shortCircuitLabel +  ":\n";
+
+        if (logicalNode->operatorSymbol ==  "&&") {
+            assemblyCode += "    mov w0, #0\n";
+        } else {
+            assemblyCode += "    mov w0, #1\n";
+        }
+
+        assemblyCode += endLabel +  ":\n";
+
+    }
+    else if (const auto* postfixNode = dynamic_cast<const PostfixNode*>(node)) {
+        VariableContext variableContext = resolveVariable(postfixNode->variableName);
+        if (variableContext.offset == -1) {
+            std::cerr << "Compilation Error: Undefined Variable\n";
+            exit(1);
+        }
+
+        assemblyCode += "    ldr w0, [x29, #-" + std::to_string(variableContext.offset) + "]\n";
+
+        if (postfixNode->operatorSymbol == "++") {
+            assemblyCode += "    add w1, w0, #1\n";
+        } else {
+            assemblyCode += "    sub w1, w0, #1\n";
+        }
+
+        assemblyCode += "    str w1, [x29, #-" + std::to_string(variableContext.offset) + "]\n";
+
+    }
+
+     else if (const auto* varNode = dynamic_cast<const VarStatementNode*>(node)) {
         generateNode(varNode->expressionNode.get());
         std::string expressionType = determineDataType(varNode->expressionNode.get());
 

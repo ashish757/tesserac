@@ -24,6 +24,16 @@ private:
     std::unique_ptr<AstNode> parseFunctionDeclaration();
     std::unique_ptr<AstNode> parseReturnStatement();
 
+    std::unique_ptr<AstNode> parseLogicalOr();
+    std::unique_ptr<AstNode> parseLogicalAnd();
+    std::unique_ptr<AstNode> parseEquality();
+    std::unique_ptr<AstNode> parserRelational();
+    std::unique_ptr<AstNode> parseRelational();
+    std::unique_ptr<AstNode> parseAdditive();
+    std::unique_ptr<AstNode> parseMultiplicative();
+    std::unique_ptr<AstNode> parsePostfix();
+
+
 public:
     explicit Parser(std::vector<Token> inputTokens);
     std::unique_ptr<AstNode> parseProgram();

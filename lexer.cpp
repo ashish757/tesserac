@@ -94,15 +94,42 @@ std::vector<Token> Lexer::tokenize() {
         }
 
         if (currentChar == '+') {
+            if (currentIndex + 1 < sourceCode.length() && sourceCode[currentIndex + 1] == '+') {
+                generatedTokens.push_back({TokenType::increment, "++"});
+                currentIndex += 2;
+                continue;
+            }
             generatedTokens.push_back({TokenType::plus, "+"});
             currentIndex++;
             continue;
         }
 
         if (currentChar == '-') {
+            if (currentIndex + 1 < sourceCode.length() && sourceCode[currentIndex + 1] == '-') {
+                generatedTokens.push_back({TokenType::decrement, "--"});
+                currentIndex += 2;
+                continue;
+            }
             generatedTokens.push_back({TokenType::minus, "-"});
             currentIndex++;
+            continue;
+        }
+        if (currentChar == '*') {
+            generatedTokens.push_back({TokenType::star, "*"});\
+            currentIndex++;\
+            continue;
 
+
+        }
+        if (currentChar == '/') {
+            generatedTokens.push_back({TokenType::slash, "/"});
+
+            currentIndex++;
+            continue;
+        }
+        if (currentChar == '%') {
+            generatedTokens.push_back({TokenType::modulo, "%"});
+            currentChar++;
             continue;
         }
         if (currentChar == '<') {
@@ -114,6 +141,22 @@ std::vector<Token> Lexer::tokenize() {
             generatedTokens.push_back({TokenType::greaterThan, ">"});
             currentIndex++;
             continue;
+        }
+
+        if (currentChar == '&') {
+            if (currentIndex + 1 < sourceCode.length() && sourceCode[currentIndex + 1] == '&') {
+                generatedTokens.push_back({TokenType::logicalAnd, "&"});
+                currentIndex += 2;
+                continue;
+            }
+        }
+
+        if (currentChar == '|') {
+            if (currentIndex + 1 < sourceCode.length() && sourceCode[currentIndex + 1] == '|') {
+                generatedTokens.push_back({TokenType::logicalOr, "|"});
+                currentIndex += 2;
+                continue;
+            }
         }
 
         if (currentChar == '=') {

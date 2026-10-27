@@ -46,7 +46,6 @@ std::unique_ptr<AstNode> Parser::parsePrimary() {
     std::cerr << "Syntax Error: Expected an integer or variable\n";
     exit(1);
 }
-
 std::unique_ptr<AstNode> Parser::parseStatement() {
     if (peekToken().type == TokenType::varKeyword) {
         return parseVarStatement();
@@ -77,7 +76,9 @@ std::unique_ptr<AstNode> Parser::parseStatement() {
     }
 
     if (peekToken().type == TokenType::identifier) {
-        return parseAssignmentStatement();
+        if (currentIndex + 1 < tokens.size() && tokens[currentIndex + 1].type == TokenType::equals) {
+            return parseAssignmentStatement();
+        }
     }
 
     std::unique_ptr<AstNode> expressionNode = parseExpression();
@@ -92,25 +93,99 @@ std::unique_ptr<AstNode> Parser::parseStatement() {
 }
 
 std::unique_ptr<AstNode> Parser::parseExpression() {
-    std::unique_ptr<AstNode> leftNode = parsePrimary();
+    return parseLogicalOr();
+}
 
-    while (peekToken().type == TokenType::plus ||
-        peekToken().type == TokenType::minus ||
-        peekToken().type == TokenType::lessThan ||
-        peekToken().type == TokenType::greaterThan ||
-        peekToken().type == TokenType::doubleEquals) {
+std::unique_ptr<AstNode> Parser::parseLogicalOr() {
+        std::unique_ptr<AstNode> leftNode = parseLogicalAnd();
+
+    while (peekToken().type == TokenType::logicalOr) {
         Token operatorToken = consumeToken();
-        std::unique_ptr<AstNode> rightNode = parsePrimary();
 
-        leftNode = std::make_unique<BinaryExpressionNode>(
-            operatorToken.value,
-            std::move(leftNode),
-            std::move(rightNode)
-        );
+        std::unique_ptr<AstNode> rightNode = parseLogicalAnd();
+        leftNode = std::make_unique<LogicalExpressionNode>(operatorToken.value, std::move(leftNode), std::move(rightNode));
     }
 
     return leftNode;
 }
+
+
+std::unique_ptr<AstNode> Parser::parseLogicalAnd() {
+    std::unique_ptr<AstNode> leftNode = parseEquality();
+
+    while (peekToken().type == TokenType::logicalAnd) {
+        Token operatorToken = consumeToken();
+        std::unique_ptr<AstNode> rightNode = parseEquality();
+        leftNode = std::make_unique<LogicalExpressionNode>(operatorToken.value, std::move(rightNode), std::move(leftNode));
+    }
+
+    return leftNode;
+}
+
+
+std::unique_ptr<AstNode> Parser::parseEquality() {
+    std::unique_ptr<AstNode> leftNode = parseRelational();
+
+    while (peekToken().type == TokenType::doubleEquals) {
+        Token operatorToken = consumeToken();
+        std::unique_ptr<AstNode> rightNode = parseRelational();
+        leftNode = std::make_unique<BinaryExpressionNode>(operatorToken.value, std::move(leftNode), std::move(rightNode));
+
+    }
+    return leftNode;
+}
+
+std::unique_ptr<AstNode> Parser::parseRelational() {
+    std::unique_ptr<AstNode> leftNode = parseAdditive();
+    while (peekToken().type == TokenType::lessThan || peekToken().type == TokenType::greaterThan) {
+        Token operatorToken = consumeToken();
+        std::unique_ptr<AstNode> rightNode = parseAdditive();
+        leftNode = std::make_unique<BinaryExpressionNode>(operatorToken.value, std::move(leftNode), std::move(rightNode));
+
+    }
+    return leftNode;
+
+}
+
+std::unique_ptr<AstNode> Parser::parseAdditive() {
+    std::unique_ptr<AstNode> leftNode = parseMultiplicative();
+
+    while (peekToken().type == TokenType::plus || peekToken().type == TokenType::minus) {
+        Token operatorToken = consumeToken();
+       std::unique_ptr<AstNode> rightNode = parseMultiplicative();
+        leftNode = std::make_unique<BinaryExpressionNode>(operatorToken.value, std::move(leftNode), std::move(rightNode));
+
+    }
+    return leftNode;
+}
+
+
+std::unique_ptr<AstNode> Parser::parseMultiplicative() {
+    std::unique_ptr<AstNode> leftNode = parsePostfix();
+
+    while (peekToken().type == TokenType::star || peekToken().type == TokenType::slash || peekToken().type == TokenType::modulo) {
+        Token operatorToken = consumeToken();
+        std::unique_ptr<AstNode> rightNode = parsePostfix();
+        leftNode = std::make_unique<BinaryExpressionNode>(operatorToken.value, std::move(leftNode), std::move(rightNode));
+    }
+    return leftNode;
+}
+
+std::unique_ptr<AstNode> Parser::parsePostfix() {
+    std::unique_ptr<AstNode> leftNode = parsePrimary();
+
+    if (peekToken().type == TokenType::increment || peekToken().type == TokenType::decrement) {
+        Token operatorToken = consumeToken();
+        if (auto* idNode = dynamic_cast<IdentifierNode*>(leftNode.get())) {
+            return std::make_unique<PostfixNode>(idNode->name, operatorToken.value);
+        }
+        std::cerr << "Syntax Error: Increment and decrement require a variable\n";
+        exit(1);
+
+    }
+    return leftNode;
+}
+
 
 std::unique_ptr<AstNode> Parser::parseVarStatement() {
     consumeToken();

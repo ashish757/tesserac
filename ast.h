@@ -26,6 +26,26 @@ public:
         : operatorSymbol(std::move(opSymbol)), leftNode(std::move(left)), rightNode(std::move(right)) {}
 };
 
+class LogicalExpressionNode : public AstNode {
+public:
+    std::string operatorSymbol;
+    std::unique_ptr<AstNode> leftNode;
+    std::unique_ptr<AstNode> rightNode;
+
+    LogicalExpressionNode(std::string opSymbol, std::unique_ptr<AstNode> left, std::unique_ptr<AstNode> right)
+    : operatorSymbol(std::move(opSymbol)), leftNode(std::move(left)), rightNode(std::move(right)) {}
+};
+
+class PostfixNode : public AstNode {
+    public:
+    std::string variableName;
+    std::string operatorSymbol;
+
+    PostfixNode(std::string name, std::string opSymbol)
+        : variableName(std::move(name)), operatorSymbol(std::move(opSymbol)) {}
+};
+
+
 class VarStatementNode : public AstNode {
 public:
     std::string variableName;
