@@ -307,13 +307,17 @@ std::unique_ptr<AstNode> Parser::parseIfStatement() {
     consumeToken();
 
     std::unique_ptr<AstNode> conditionNode = parseExpression();
-    std::unique_ptr<BlockNode> trueBlock = parseBlock();
-    std::unique_ptr<BlockNode> falseBlock = nullptr;
+    std::unique_ptr<AstNode> trueBlock = parseBlock();
+    std::unique_ptr<AstNode> falseBlock = nullptr;
 
     if (peekToken().type == TokenType::elseKeyword) {
         consumeToken();
 
-        falseBlock = parseBlock();
+        if (peekToken().type == TokenType::ifKeyword) {
+            falseBlock = parseIfStatement();
+        } else {
+            falseBlock = parseBlock();
+        }
     }
 
     return std::make_unique<IfStatementNode>(
