@@ -184,3 +184,33 @@ After this as the current state of program is saved and we can safely run the fu
 
 
 - In case you are interested, the major problems i faced are the apple hardware bugs for implementing float and ignorance in string department
+
+
+
+
+## Devlog 8 - 30 Oct
+took a long break i guess since last coding, i was attending a week long cybersecurity workshop
+
+anyways i am back and i completed some thigs and also implemented the static typing thing
+
+
+- ### break and continue
+- simple just check that these keywords are within the a while loop only
+- and then put up labels accordingly `.L_while_start.` , `.L_while_end_`
+
+- ### else if ladder
+- i added the support for else if ladder, that is now you can chain the `if else-if else-if else` 
+- it was easier to do then it sounds, i was initially confused on how to even start implementing this, i toook some ai help and got to know that a little improvement in my existing logic will support it
+
+
+- ### Static type and schemantic check -  this is most interesting one
+- so earlier i used a `var` keyword to declare and initialize the variables, but it is childish, like a dynamically typed language in 2026, ???
+- to change i first defined datatypes and then keyword like `int` `float` `string` 
+- then did schemantic checking to ensure a int has only int value if not then throw a error.
+- schema checking was the most difficulty part i could not recall everything about it i had to hit the textbook and AI.
+
+## Note
+- i saw i hackatime has like tracked a differnet project time into this project time, 
+- ran a agent on a different project and then i started working on this while agenet was actively coding in the backend, the agent was working on  a personal project the repo is private to hackatime could not detect it
+- as a result i now see about 3hrs of ai code on this project and also typescript in languages, but i never had a typescript file in this project
+- just wanted to mention the bug, i dont know if there is some official portal to report this bug, i will look into
