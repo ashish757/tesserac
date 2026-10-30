@@ -191,6 +191,7 @@ void CodeGenerator::generateNode(const AstNode* node) {
         }
     } else if (const auto* assignNode = dynamic_cast<const AssignmentNode*>(node)) {
         generateNode(assignNode->expressionNode.get());
+
         VariableContext variableContext = resolveVariable(assignNode->variableName);
 
         if (variableContext.offset == -1) {
@@ -198,6 +199,12 @@ void CodeGenerator::generateNode(const AstNode* node) {
             exit(1);
         }
 
+        std::string expressionType = determineDataType(assignNode->expressionNode.get());
+        if (expressionType != variableContext.dataType) {
+            std::cerr<<"Semantic Error: Type mismatch. Cannot assign '"<<expressionType
+            <<"' to variable '"<<assignNode->variableName<<"'\n";
+            exit(1);
+        }
         if (variableContext.dataType == "float") {
             assemblyCode += "   str d0, [x29, #-" + std::to_string(variableContext.offset) + "]\n";
         } else if (variableContext.dataType == "string") {
