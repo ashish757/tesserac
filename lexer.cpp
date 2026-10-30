@@ -46,31 +46,35 @@ std::vector<Token> Lexer::tokenize() {
                 currentIndex++;
             }
 
-            if (alphaString == "var") {
-                generatedTokens.push_back({TokenType::varKeyword, alphaString});
-            } else if (alphaString == "print") {
-                generatedTokens.push_back({TokenType::printKeyword, "print"});
+
+            if (alphaString == "print") {
+                generatedTokens.push_back({TokenType::printKeyword, alphaString});
             } else if (alphaString == "if") {
                 generatedTokens.push_back({TokenType::ifKeyword, alphaString});
             } else if (alphaString == "else") {
                 generatedTokens.push_back({TokenType::elseKeyword, alphaString});
             } else if (alphaString == "while") {
                 generatedTokens.push_back({TokenType::whileKeyword, alphaString});
-            } else if (alphaString == "fire") {
+            } else if (alphaString == "fn") {
                 generatedTokens.push_back({TokenType::fnKeyword, alphaString});
             } else if (alphaString == "return") {
                 generatedTokens.push_back({TokenType::returnKeyword, alphaString});
-            } else if (alphaString == "null") {
-                generatedTokens.push_back({TokenType::nullKeyword, alphaString});
             } else if (alphaString == "break") {
                 generatedTokens.push_back({TokenType::breakKeyword, alphaString});
             } else if (alphaString == "continue") {
                 generatedTokens.push_back({TokenType::continueKeyword, alphaString});
-            }
-
-            else {
+            } else if (alphaString == "null") {
+                generatedTokens.push_back({TokenType::nullKeyword, alphaString});
+            } else if (alphaString == "int") {
+                generatedTokens.push_back({TokenType::intKeyword, alphaString});
+            } else if (alphaString == "float") {
+                generatedTokens.push_back({TokenType::floatKeyword, alphaString});
+            } else if (alphaString == "string") {
+                generatedTokens.push_back({TokenType::stringKeyword, alphaString});
+            } else {
                 generatedTokens.push_back({TokenType::identifier, alphaString});
             }
+            continue;
             continue;
         }
 

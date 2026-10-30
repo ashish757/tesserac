@@ -9,7 +9,7 @@ enum class TokenType {
 
     identifier,
 
-    varKeyword,
+
     printKeyword,
     ifKeyword,
     elseKeyword,
@@ -43,6 +43,10 @@ enum class TokenType {
     
     breakKeyword,
     continueKeyword,
+
+    intKeyword,
+    floatKeyword,
+    stringKeyword,
 };
 
 struct Token {

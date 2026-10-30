@@ -48,11 +48,12 @@ class PostfixNode : public AstNode {
 
 class VarStatementNode : public AstNode {
 public:
+    std::string dataType;
     std::string variableName;
     std::unique_ptr<AstNode> expressionNode;
 
-    VarStatementNode(std::string name, std::unique_ptr<AstNode> expr)
-        : variableName(std::move(name)), expressionNode(std::move(expr)) {}
+    VarStatementNode(std::string type, std::string name, std::unique_ptr<AstNode> expr)
+        : dataType(std::move(type)), variableName(std::move(name)), expressionNode(std::move(expr)) {}
 };
 
 class ProgramNode : public AstNode {

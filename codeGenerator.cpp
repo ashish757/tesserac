@@ -127,25 +127,31 @@ void CodeGenerator::generateNode(const AstNode* node) {
 
         assemblyCode += "    str w1, [x29, #-" + std::to_string(variableContext.offset) + "]\n";
 
-    }
+    } else if (const auto* varNode = dynamic_cast<const VarStatementNode*>(node)) {
+         generateNode(varNode->expressionNode.get());
+         std::string expressionType = determineDataType(varNode->expressionNode.get());
 
-     else if (const auto* varNode = dynamic_cast<const VarStatementNode*>(node)) {
-        generateNode(varNode->expressionNode.get());
-        std::string expressionType = determineDataType(varNode->expressionNode.get());
+         if (expressionType != varNode->dataType) {
+             std::cerr << "Semantic Error: Type mismatch. Cannot assign '" << expressionType
+                       << "' to variable '" << varNode->variableName
+                       << "' of type '" << varNode->dataType << "'\n";
+             exit(1);
+         }
 
-        currentStackOffset += 16;
-        environmentStack.back()[varNode->variableName] = {currentStackOffset, expressionType};
+         currentStackOffset += 8;
+         environmentStack.back()[varNode->variableName] = {currentStackOffset, varNode->dataType};
 
-        if (expressionType == "float") {
-            assemblyCode += "    str d0, [x29, #-" + std::to_string(currentStackOffset) + "]\n";
-        } else if (expressionType == "string") {
-            assemblyCode += "    str x0, [x29, #-" + std::to_string(currentStackOffset) + "]\n";
-        }
-        else {
-            assemblyCode += "    str w0, [x29, #-" + std::to_string(currentStackOffset) + "]\n";
-        }
+         if (varNode->dataType == "float") {
+             assemblyCode += "    str d0, [x29, #-" + std::to_string(currentStackOffset) + "]\n";
+         } else if (varNode->dataType == "string") {
+             assemblyCode += "    str x0, [x29, #-" + std::to_string(currentStackOffset) + "]\n";
+         } else {
+             assemblyCode += "    str w0, [x29, #-" + std::to_string(currentStackOffset) + "]\n";
+         }
+     }
 
-    } else if (const auto* identifierNode = dynamic_cast<const IdentifierNode*>(node)) {
+
+      else if (const auto* identifierNode = dynamic_cast<const IdentifierNode*>(node)) {
         VariableContext variableContext = resolveVariable(identifierNode->name);
 
         if (variableContext.offset == -1) {

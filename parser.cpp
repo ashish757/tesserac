@@ -47,7 +47,7 @@ std::unique_ptr<AstNode> Parser::parsePrimary() {
     exit(1);
 }
 std::unique_ptr<AstNode> Parser::parseStatement() {
-    if (peekToken().type == TokenType::varKeyword) {
+    if (peekToken().type == TokenType::intKeyword || peekToken().type == TokenType::floatKeyword || peekToken().type == TokenType::stringKeyword ) {
         return parseVarStatement();
     }
 
@@ -213,7 +213,7 @@ std::unique_ptr<AstNode> Parser::parsePostfix() {
 
 
 std::unique_ptr<AstNode> Parser::parseVarStatement() {
-    consumeToken();
+    Token typeToken = consumeToken();
 
     Token identifierToken = consumeToken();
     if (identifierToken.type != TokenType::identifier) {
@@ -221,9 +221,12 @@ std::unique_ptr<AstNode> Parser::parseVarStatement() {
         exit(1);
     }
 
+
+
     Token equalsToken = consumeToken();
+
     if (equalsToken.type != TokenType::equals) {
-        std::cerr << "Syntax Error: Expected '='\n";
+        std::cerr << "Syntax Error: Expected '=' "<<"\n";
         exit(1);
     }
 
@@ -235,7 +238,7 @@ std::unique_ptr<AstNode> Parser::parseVarStatement() {
         exit(1);
     }
 
-    return std::make_unique<VarStatementNode>(identifierToken.value, std::move(expressionNode));
+    return std::make_unique<VarStatementNode>(typeToken.value, identifierToken.value, std::move(expressionNode));
 }
 
 
