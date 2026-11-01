@@ -47,6 +47,10 @@ enum class TokenType {
     intKeyword,
     floatKeyword,
     stringKeyword,
+
+    leftBracket,
+    rightBracket,
+
 };
 
 struct Token {

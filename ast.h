@@ -164,3 +164,39 @@ public:
 class BreakNode :  public AstNode {};
 
 class ContinueNode : public AstNode {};
+
+
+
+
+
+class ArrayDeclarationNode : public AstNode {
+public:
+    std::string arrayName;
+    std::string dataType;
+
+    int size;
+
+    ArrayDeclarationNode(std::string type, std::string name, int sz)
+        : dataType(std::move(type)), arrayName(std::move(name)), size(sz) {}
+};
+
+
+class ArrayAccessNode : public AstNode {
+public:
+    std::string arrayName;
+    std::unique_ptr<AstNode> indexExpression;
+
+    ArrayAccessNode(std::string name, std::unique_ptr<AstNode> index)
+        : arrayName(std::move(name)), indexExpression(std::move(index)) {}
+};
+
+
+class ArrayAssignmentNode : public AstNode {
+public:
+    std::string arrayName;
+    std::unique_ptr<AstNode> indexExpression;
+    std::unique_ptr<AstNode> valueExpression;
+
+    ArrayAssignmentNode(std::string name, std::unique_ptr<AstNode> index, std::unique_ptr<AstNode> value)
+        : arrayName(std::move(name)), indexExpression(std::move(index)), valueExpression(std::move(value)) {};
+};

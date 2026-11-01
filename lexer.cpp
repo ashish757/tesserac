@@ -75,7 +75,6 @@ std::vector<Token> Lexer::tokenize() {
                 generatedTokens.push_back({TokenType::identifier, alphaString});
             }
             continue;
-            continue;
         }
 
 
@@ -206,6 +205,18 @@ std::vector<Token> Lexer::tokenize() {
         }
         if (currentChar == ',') {
             generatedTokens.push_back({TokenType::comma, ","});
+            currentIndex++;
+            continue;
+        }
+
+        if (currentChar == '[') {
+            generatedTokens.push_back({TokenType::leftBracket, "["});
+            currentIndex++;
+            continue;
+        }
+
+        if (currentChar == ']') {
+            generatedTokens.push_back({TokenType::rightBracket, "]"});
             currentIndex++;
             continue;
         }

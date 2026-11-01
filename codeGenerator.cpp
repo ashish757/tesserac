@@ -337,6 +337,59 @@ void CodeGenerator::generateNode(const AstNode* node) {
         assemblyCode += endLabel + ":\n";
 
     }
+    else if (const auto* arrayDeclarationNode = dynamic_cast<const ArrayDeclarationNode*>(node)) {
+        int baseOffset = currentStackOffset + 8;
+        environmentStack.back()[arrayDeclarationNode->arrayName] = {baseOffset, arrayDeclarationNode->dataType};
+
+        currentStackOffset += (8*arrayDeclarationNode->size);
+    }
+    else if (const auto* arrayAssign = dynamic_cast<const ArrayAssignmentNode*>(node)) {
+        VariableContext ctx = resolveVariable(arrayAssign->arrayName);
+
+        generateNode(arrayAssign->valueExpression.get());
+
+        if (ctx.dataType == "float") {
+            assemblyCode += "    fmov d19, d0\n";
+        } else if (ctx.dataType == "string") {
+            assemblyCode += "    mov x19, x0\n";
+        } else {
+            assemblyCode += "    mov w19, w0\n";
+        }
+
+
+        generateNode(arrayAssign->indexExpression.get());
+        assemblyCode += "    sxtw x1, w0\n";
+        assemblyCode += "    lsl x1, x1, #3\n";
+        assemblyCode += "    mov x2, #" + std::to_string(ctx.offset) + "\n";
+        assemblyCode += "    add x1, x1, x2\n";
+        assemblyCode += "    sub x3, x29, x1\n";
+
+
+        if (ctx.dataType == "float") {
+            assemblyCode += "    str d19, ";
+        } else if (ctx.dataType == "string") {
+            assemblyCode += "    str x19, [x3]\n";
+        } else {
+            assemblyCode += "    str w19, [x3]\n";
+        }
+    } else if (const auto* accessNode = dynamic_cast<const ArrayAccessNode*>(node)) {
+        VariableContext ctx = resolveVariable(accessNode->arrayName);
+
+        generateNode(accessNode->indexExpression.get());
+        assemblyCode += "    sxtw x1, w0\n";
+        assemblyCode += "    lsl x1, x1, #3\n";
+        assemblyCode += "    mov x2, #" + std::to_string(ctx.offset) + "\n";
+        assemblyCode += "    add x1, x1, x2\n";
+        assemblyCode += "    sub x3, x29, x1\n";
+
+        if (ctx.dataType == "float") {
+            assemblyCode += "    ldr d0, [x3]\n";
+        } else if(ctx.dataType == "string") {
+            assemblyCode += "    ldr x0, [x3]\n";
+        } else {
+            assemblyCode += "    ldr w0, [x3]\n";
+        }
+    }
     else {
         std::cerr << "Compilation Error: Unknown AST Node\n";
         exit(1);
@@ -375,5 +428,10 @@ std::string CodeGenerator::determineDataType(const AstNode* node) {
     if (const auto* identifierNode = dynamic_cast<const IdentifierNode*>(node)) {
         return resolveVariable(identifierNode->name).dataType;
     }
+    if (const auto* accessNode = dynamic_cast<const ArrayAccessNode*>(node)) {
+        return resolveVariable(accessNode->arrayName).dataType;
+    }
+
+
     return "int";
 }
