@@ -188,7 +188,7 @@ After this as the current state of program is saved and we can safely run the fu
 
 
 
-## Devlog 8 - 30 Oct
+# Devlog 8 - 30 Oct
 took a long break i guess since last coding, i was attending a week long cybersecurity workshop
 
 anyways i am back and i completed some thigs and also implemented the static typing thing
@@ -214,3 +214,18 @@ anyways i am back and i completed some thigs and also implemented the static typ
 - ran a agent on a different project and then i started working on this while agenet was actively coding in the backend, the agent was working on  a personal project the repo is private to hackatime could not detect it
 - as a result i now see about 3hrs of ai code on this project and also typescript in languages, but i never had a typescript file in this project
 - just wanted to mention the bug, i dont know if there is some official portal to report this bug, i will look into
+
+
+# Devlog 9,  1 November
+- last night i implemented a data structure for sequential memory access
+- it has three major componenets `declaration node`, `assignment node`, `access node`
+- it took some basic pointer arithmatic and a new token for `[` and `]`
+- as of now this array like structure supports int, strign and float
+-  array like because my aim is to transform this into full fledged array implemenetation but right now its nowhere near that like it lacks advnaced builtin memeber function, there is no builtin library supprort ro creatino of custom libraary in this language
+- also a struct support is needed to proceed further to implement something like OOPs
+- fixed some minor code quality issues and inconsistent variable names
+
+### Whats ahead
+- better error reporting, i was gettin an expected '=' error and i could not locate the issue in my compiler code myself so how would a user recognise it 
+- some code quality improvement and make it more modular
+- built in and custom library support and also support for multiple code files and import export things
