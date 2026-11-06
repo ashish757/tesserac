@@ -34,8 +34,12 @@ private:
 
     std::unique_ptr<AstNode> parseArrayAssignmentStatement();
 
+    std::string sourceCode;
+
 
 public:
-    explicit Parser(std::vector<Token> inputTokens);
+    explicit Parser(std::vector<Token> inputTokens, std::string source);
     std::unique_ptr<AstNode> parseProgram();
+
+    void throwError(const std::string& message, Token token);
 };

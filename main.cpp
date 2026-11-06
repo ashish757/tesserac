@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
     Lexer myLexer(sourceCode);
     std::vector<Token> lexedTokens = myLexer.tokenize();
 
-    Parser myParser(lexedTokens);
+    Parser myParser(lexedTokens, sourceCode);
     std::unique_ptr<AstNode> abstractSyntaxTree = myParser.parseProgram();
 
     CodeGenerator myGenerator;

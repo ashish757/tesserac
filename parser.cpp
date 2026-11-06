@@ -2,7 +2,7 @@
 #include <iostream>
 #include <cstdlib>
 
-Parser::Parser(std::vector<Token> inputTokens) : tokens(std::move(inputTokens)), currentIndex(0) {}
+Parser::Parser(std::vector<Token> inputTokens, std::string source) : tokens(std::move(inputTokens)), currentIndex(0), sourceCode(std::move(source)) {}
 
 Token Parser::consumeToken() {
     return tokens[currentIndex++];
@@ -100,8 +100,7 @@ std::unique_ptr<AstNode> Parser::parseStatement() {
 
         Token semiColonToken = consumeToken();
         if (semiColonToken.type != TokenType::semicolon) {
-            std::cerr<<"Syntax Error: Expected ';' \n";
-            exit(1);
+           throwError("Expected ';' at the end of the statement", semiColonToken);
 
         }
 
@@ -457,6 +456,40 @@ std::unique_ptr<AstNode> Parser::parseArrayAssignmentStatement() {
 
 
 
+}
+
+
+
+
+
+
+
+
+void Parser::throwError(const std::string& message, Token token) {
+    std::cerr<<"Syntax Error:\033[0m "<<message<<"\n\n";
+    std::cerr<<"  --> program.ash:"<<token.value<<":"<<token.column<<"\n\n";
+
+
+    int currentLine = 1;
+    size_t  lineStart = 0;
+    size_t lineEnd = sourceCode.find('\n');
+
+    while (currentLine != token.line && lineEnd != std::string::npos) {
+        lineStart = lineEnd + 1;
+        lineEnd = sourceCode.find("\n", lineStart);
+        currentLine++;
+    }
+
+    if (lineEnd == std::string::npos) lineEnd = sourceCode.length();
+
+    std::string errorLine = sourceCode.substr(lineStart, lineEnd - lineStart);
+
+    std::cerr<<" "<<token.line<<" | "<<errorLine<<"\n";
+    std::cerr<<"   | ";
+    for (int i =1; i < token.column; i++) std::cerr<<" ";
+    std::cerr<<"\033[1;31m^\033[0m\n\n";
+
+    exit(1);
 }
 
 
