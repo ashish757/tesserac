@@ -8,9 +8,31 @@ Lexer::Lexer(std::string source) : sourceCode(std::move(source)), currentIndex(0
 
 
 std::vector<Token> Lexer::tokenize() {
+    int currentLine = 1;
+    int currentCol = 1;
+    int lastProcessedIndex = 0;
+    size_t tokensBackfilled = 0;
+
     std::vector<Token> generatedTokens;
 
     while (currentIndex < sourceCode.length()) {
+
+        while (tokensBackfilled < generatedTokens.size()) {
+            generatedTokens[tokensBackfilled].line = currentLine;
+            generatedTokens[tokensBackfilled].column = currentCol;
+            tokensBackfilled++;
+        }
+
+        while (lastProcessedIndex < currentIndex) {
+            if (sourceCode[lastProcessedIndex] == '\n') {
+                currentLine++;
+                currentCol  = 1;
+            } else {
+                currentCol++;
+            }
+            lastProcessedIndex++;
+        }
+
         char currentChar = sourceCode[currentIndex];
 
         if (std::isspace(currentChar)) {
@@ -224,6 +246,13 @@ std::vector<Token> Lexer::tokenize() {
         std::cerr<<"Synatax Error: Unexpected Character "<<currentChar<<"\n";
         exit(1);
     }
+
+    while (tokensBackfilled < generatedTokens.size()) {
+        generatedTokens[tokensBackfilled].line = currentLine;
+        generatedTokens[tokensBackfilled].column = currentCol;
+        tokensBackfilled++;
+    }
+
     generatedTokens.push_back({TokenType::endOfFile, ""});
     return generatedTokens;
 }

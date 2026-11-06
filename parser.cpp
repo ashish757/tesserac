@@ -260,8 +260,7 @@ std::unique_ptr<AstNode> Parser::parseVarStatement() {
 
     Token semicolonToken = consumeToken();
     if (semicolonToken.type != TokenType::semicolon) {
-        std::cerr<<"Syntax Error: Expected ';' \n";
-        exit(1);
+        throwError("Expected ';' at the end of the statement", semicolonToken);
     }
 
     return std::make_unique<VarStatementNode>(typeToken.value, identifierToken.value, std::move(expressionNode));
@@ -304,8 +303,7 @@ std::unique_ptr<AstNode> Parser::parseAssignmentStatement() {
 
     Token semicolonToken = consumeToken();
     if (semicolonToken.type != TokenType::semicolon) {
-        std::cerr<<"Syntax Error: Expected ';' \n";
-        exit(1);
+       throwError("Expected ';' at the end of the statement", semicolonToken);
     }
     return std::make_unique<AssignmentNode>(identifierToken.value, std::move(expressionNode));
 }
@@ -443,9 +441,7 @@ std::unique_ptr<AstNode> Parser::parseArrayAssignmentStatement() {
 
     Token semicolonToken = consumeToken();
     if (semicolonToken.type != TokenType::semicolon) {
-        // Add the semicolonToken.value to the output
-        std::cerr << "Syntax Error: Expected ';', but got '" << semicolonToken.value << "'\n";
-        exit(1);
+       throwError("Expected ';' at the end of the statement", semicolonToken);
     }
 
 
@@ -467,7 +463,7 @@ std::unique_ptr<AstNode> Parser::parseArrayAssignmentStatement() {
 
 void Parser::throwError(const std::string& message, Token token) {
     std::cerr<<"Syntax Error:\033[0m "<<message<<"\n\n";
-    std::cerr<<"  --> program.ash:"<<token.value<<":"<<token.column<<"\n\n";
+    std::cerr<<"  --> program.ash:"<<token.line<<":"<<token.column<<"\n\n";
 
 
     int currentLine = 1;
