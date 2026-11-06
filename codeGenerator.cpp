@@ -172,19 +172,18 @@ void CodeGenerator::generateNode(const AstNode* node) {
         std::string expressionType = determineDataType(printNode->expressionNode.get());
 
         if (expressionType == "float") {
-            assemblyCode += "    str d0, [sp]\n";
             assemblyCode += "    adrp x0, floatFormatString@PAGE\n";
             assemblyCode += "    add x0, x0, floatFormatString@PAGEOFF\n";
             assemblyCode += "    bl _printf\n";
         }
         else if (expressionType == "string") {
-            assemblyCode += "    str x0, [sp]\n";
+            assemblyCode += "    mov x1,  x0\n";
             assemblyCode += "    adrp x0, stringFormatString@PAGE\n";
             assemblyCode += "    add x0, x0, stringFormatString@PAGEOFF\n";
             assemblyCode += "    bl _printf\n";
         }
         else {
-            assemblyCode += "    str w0, [sp]\n";
+            assemblyCode += "    mov w1, w0\n";
             assemblyCode += "    adrp x0, formatString@PAGE\n";
             assemblyCode += "    add x0, x0, formatString@PAGEOFF\n";
             assemblyCode += "    bl _printf\n";
@@ -293,8 +292,10 @@ void CodeGenerator::generateNode(const AstNode* node) {
 
             assemblyCode += "    str w" + std::to_string(i) + ", [x29, #-" + std::to_string(currentStackOffset) + "]\n";
         }
+
         generateNode(fnNode->body.get());
 
+        assemblyCode += "    movF sp, x29\n";
         assemblyCode += "    ldp x29, x30, [sp], 16\n";
         assemblyCode += "    ret\n";
 
@@ -304,16 +305,23 @@ void CodeGenerator::generateNode(const AstNode* node) {
     } else if (const auto* callNode = dynamic_cast<const FunctionCallNode*>(node)) {
         for (size_t i =0; i< callNode->arguments.size(); i++) {
             generateNode(callNode->arguments[i].get());
-            assemblyCode += "    str w0, [sp, #-16]!\n";
+
+            if (i > 0) {
+            assemblyCode += "    mov w" +  std::to_string(i) + ", w0\n";
+
+            }
         }
-        for (int i = callNode->arguments.size()-1; i>=0; i--) {
-            assemblyCode += "    ldr w" + std::to_string(i) + ", [sp], 16\n";
-        }
+        //
+        // for (int i = callNode->arguments.size()-1; i>=0; i--) {
+        //     assemblyCode += "    ldr w" + std::to_string(i) + ", [sp], 16\n";
+        // }
 
         assemblyCode += "    bl _" + callNode->functionName + "\n";
     } else if (const auto* returnNode = dynamic_cast<const ReturnNode*>(node)) {
-        generateNode(returnNode->expressionNode.get());
-        assemblyCode += "    ldp x29, x30, [sp], 16\n";
+        if (returnNode->expressionNode) generateNode(returnNode->expressionNode.get());
+
+        assemblyCode += "    mov sp, x29\n";
+        assemblyCode += "    ldp x29, x30, [sp], #16\n";
         assemblyCode += "    ret\n";
     } else if (const auto* whileNode = dynamic_cast<const WhileStatementNode*>(node)) {
         int currentLabel = labelCounter++;
