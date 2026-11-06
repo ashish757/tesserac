@@ -229,3 +229,20 @@ anyways i am back and i completed some thigs and also implemented the static typ
 - better error reporting, i was gettin an expected '=' error and i could not locate the issue in my compiler code myself so how would a user recognise it 
 - some code quality improvement and make it more modular
 - built in and custom library support and also support for multiple code files and import export things
+
+
+
+# Devlog 10, 6 November
+- worked on improving the error messages
+- now the error messages include the line and column of error along with the actual source code reference 
+
+- currently its bit unoptimized as upon error i am sercing the code base to find the source but i may cause error if there are two very similar lines of code and its also a bad approach for large codebases
+- i will look and read and improve this into version 2, but for now this brutforce is just fine to proceed and geta base redy for the compiler
+
+### after some deep thinking in solitude about the future, here my next steps
+## Procedural Programing
+- right now the function calls are just an illusion they dont have proper system level solid design, like i am targeting arm64, and as of now nested function calls are a dream because of oversimplification that i did earlier 
+- so i will implementing something called `ARM64 Calling Convention`, it will standardize which registors wil be used and how will context be pushed and poped for each function for that proper stack hell.
+
+## some complex datatype 
+- like `Dictonary in python` or `Struct on CPP` or `Objects in JavaScript`.
