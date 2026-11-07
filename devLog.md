@@ -266,3 +266,4 @@ anyways i am back and i completed some thigs and also implemented the static typ
 - Fixed some bugs relted to parsing, basically in one place i was incrementing the char itself rather then the index which tracks the char
 - added the missing condition of logical operator in Lexical Analyzer
 - there was problem with using the parenthesis around condition in while and if statements, fixed that by parsing accordingly
+- Improved the Error Reporting, replaced all the older error with new improved ones

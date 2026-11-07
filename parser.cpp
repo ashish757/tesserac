@@ -98,8 +98,7 @@ std::unique_ptr<AstNode> Parser::parseStatement() {
        consumeToken();
         Token semiColonToken = consumeToken();
         if (semiColonToken.type != TokenType::semicolon) {
-            std::cerr<<"Syntax Error: Expected ';' \n";
-            exit(1);
+            throwError("Expected ';' after 'break'", semiColonToken);
         }
         return std::make_unique<BreakNode>();
 
@@ -217,6 +216,7 @@ std::unique_ptr<AstNode> Parser::parseMultiplicative() {
     return leftNode;
 }
 
+
 std::unique_ptr<AstNode> Parser::parsePostfix() {
     std::unique_ptr<AstNode> leftNode = parsePrimary();
 
@@ -225,58 +225,47 @@ std::unique_ptr<AstNode> Parser::parsePostfix() {
         if (auto* idNode = dynamic_cast<IdentifierNode*>(leftNode.get())) {
             return std::make_unique<PostfixNode>(idNode->name, operatorToken.value);
         }
-        std::cerr << "Syntax Error: Increment and decrement require a variable\n";
-        exit(1);
-
+        throwError("Increment and decrement operators require a valid variable", operatorToken);
     }
     return leftNode;
 }
-
 
 std::unique_ptr<AstNode> Parser::parseVarStatement() {
     Token typeToken = consumeToken();
 
     Token identifierToken = consumeToken();
     if (identifierToken.type != TokenType::identifier) {
-        std::cerr << "Syntax Error: Expected identifier\n";
-        exit(1);
+        throwError("Expected an identifier name after type '" + typeToken.value + "'", identifierToken);
     }
 
     if (peekToken().type == TokenType::leftBracket) {
         consumeToken();
         Token sizeToken = consumeToken();
         if (sizeToken.type != TokenType::integer) {
-            std::cerr<<"Syntax Error: Array size must be an integer\n";
-            exit(1);
+            throwError("Array size must be an integer", sizeToken);
         }
 
         int size = std::stoi(sizeToken.value);
 
-        consumeToken();
-        consumeToken();
+        consumeToken(); // ']'
+        consumeToken(); // ';'
         return std::make_unique<ArrayDeclarationNode>(typeToken.value, identifierToken.value, size);
-
     }
 
-
-
     Token equalsToken = consumeToken();
-
     if (equalsToken.type != TokenType::equals) {
-        std::cerr << "Syntax Error: Expected '=' "<<"\n";
-        exit(1);
+        throwError("Expected '=' to initialize variable '" + identifierToken.value + "'", equalsToken);
     }
 
     std::unique_ptr<AstNode> expressionNode = parseExpression();
 
     Token semicolonToken = consumeToken();
     if (semicolonToken.type != TokenType::semicolon) {
-        throwError("Expected ';' at the end of the statement", semicolonToken);
+        throwError("Expected ';' after variable declaration", semicolonToken);
     }
 
     return std::make_unique<VarStatementNode>(typeToken.value, identifierToken.value, std::move(expressionNode));
 }
-
 
 
 std::unique_ptr<AstNode> Parser::parseProgram() {
@@ -289,12 +278,11 @@ std::unique_ptr<AstNode> Parser::parseProgram() {
 }
 
 std::unique_ptr<AstNode> Parser::parsePrintStatement() {
-    consumeToken();
+    Token printToken = consumeToken();
     std::unique_ptr<AstNode> expressionNode = parseExpression();
     Token semicolonToken = consumeToken();
     if (semicolonToken.type != TokenType::semicolon) {
-        std::cerr<<"Syntax Error: Expected ';' \n";
-        exit(1);
+        throwError("Expected ';' after print statement", semicolonToken);
     }
     return std::make_unique<PrintStatementNode>(std::move(expressionNode));
 }
@@ -304,17 +292,15 @@ std::unique_ptr<AstNode> Parser::parseAssignmentStatement() {
     Token identifierToken = consumeToken();
 
     Token equalsToken = consumeToken();
-
     if (equalsToken.type != TokenType::equals) {
-        std::cerr<<"Syntax Error: Expected '='\n";
-        exit(1);
+        throwError("Expected '=' after variable '" + identifierToken.value + "'", equalsToken);
     }
 
     std::unique_ptr<AstNode> expressionNode = parseExpression();
 
     Token semicolonToken = consumeToken();
     if (semicolonToken.type != TokenType::semicolon) {
-       throwError("Expected ';' at the end of the statement", semicolonToken);
+        throwError("Expected ';' at the end of the assignment", semicolonToken);
     }
     return std::make_unique<AssignmentNode>(identifierToken.value, std::move(expressionNode));
 }
@@ -322,8 +308,7 @@ std::unique_ptr<AstNode> Parser::parseAssignmentStatement() {
 std::unique_ptr<BlockNode> Parser::parseBlock() {
     Token leftBraceToken = consumeToken();
     if (leftBraceToken.type != TokenType::leftBrace) {
-        std::cerr<<"Syntax Error: Expected '{'\n";
-        exit(1);
+        throwError("Expected '{' to open block", leftBraceToken);
     }
 
     auto blockNode = std::make_unique<BlockNode>();
@@ -334,8 +319,7 @@ std::unique_ptr<BlockNode> Parser::parseBlock() {
 
     Token rightBraceToken = consumeToken();
     if (rightBraceToken.type != TokenType::rightBrace) {
-        std::cerr<<"Syntax Error: Expected '}'\n";
-        exit(1);
+        throwError("Expected '}' to close block", rightBraceToken);
     }
 
     return blockNode;
@@ -403,16 +387,13 @@ std::unique_ptr<AstNode> Parser::parseFunctionDeclaration() {
 
 
 std::unique_ptr<AstNode> Parser::parseReturnStatement() {
-    consumeToken();
-
+    Token returnToken = consumeToken();
     std::unique_ptr<AstNode> expressionNode = parseExpression();
 
     Token semicolonToken = consumeToken();
     if (semicolonToken.type != TokenType::semicolon) {
-        std::cerr<<"Syntax Error: Expected ';' \n";
-        exit(1);
+        throwError("Expected ';' after return expression", semicolonToken);
     }
-
     return std::make_unique<ReturnNode>(std::move(expressionNode));
 }
 
@@ -433,33 +414,28 @@ std::unique_ptr<AstNode> Parser::parseFunctionCall(const std::string& functionNa
     return std::make_unique<FunctionCallNode>(functionName, std::move(arguments));
 }
 
-
 std::unique_ptr<AstNode> Parser::parseArrayAssignmentStatement() {
     Token identifierToken = consumeToken();
     consumeToken();
-
 
     std::unique_ptr<AstNode> indexExpr = parseExpression();
 
     Token rightBracket = consumeToken();
     if (rightBracket.type != TokenType::rightBracket) {
-        std::cerr<<"Syntax Error: Expected ']'\n";
-        exit(1);
+        throwError("Expected ']' to close array index", rightBracket);
     }
 
     Token equalsToken = consumeToken();
     if (equalsToken.type != TokenType::equals) {
-        std::cerr<<"Syntax Error: Expected '='\n";
-        exit(1);
+        throwError("Expected '=' to assign value to array", equalsToken);
     }
 
     std::unique_ptr<AstNode> valueExpr = parseExpression();
 
     Token semicolonToken = consumeToken();
     if (semicolonToken.type != TokenType::semicolon) {
-       throwError("Expected ';' at the end of the statement", semicolonToken);
+        throwError("Expected ';' at the end of array assignment", semicolonToken);
     }
-
 
 
     return std::make_unique<ArrayAssignmentNode>(identifierToken.value, std::move(indexExpr), std::move(valueExpr));
