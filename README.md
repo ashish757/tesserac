@@ -3,7 +3,7 @@ A compiler for simple programing language Ash (i created it), written in C++ for
 
 It tokenizes, parses and compiles  syntax directly into native Apple Silicon (ARM64) assembly
 
-
+> You can find some code examples at the bottom of this document, the language is relly simple so i am not gogin to write a documentation the examples in the end are enoguh
 
 # Motive
 - i built a CHIP-8 Emulator in C++, and i liked it very much it was very different from the Web Development that i have been doing all the time
@@ -11,6 +11,32 @@ It tokenizes, parses and compiles  syntax directly into native Apple Silicon (AR
 - i gave it a read and i went all in, hail low level
 
 
+
+# How to Run/Test
+
+# Run & Test Quickly
+- download the executable from the releases section https://github.com/ashish757/tesserac/releases 
+
+### Note
+- The downloaded application might not run on your macbook
+- this is because this executable was not signed with Apple Developer Licence (which is $100)
+- So apple may not let you run this, but there is a workaround for these scenarios, i will explain below but if you dont understand figure it out yourlsef not very difficult
+1. Download and run the application once, you wont be able to but stil do this step
+2. Open System Settings and go in security Tab, in there scroll down you will find the section where it says the apple blocked "Tesserac"
+3. form there you will be ablt to run the applicaiton anyway
+> I checkout there is not solution to this problem only thing that can i be down it $100 apple developer certificate, which i am not gogin to buy
+
+# 2. To Run & Build locally
+- clone the repo
+- cd to root directory
+- then run `clang++ *.cpp -o tesserac -std=c++20` to build the code
+- then run `./tesserac <file.ash>`
+
+### But if you want further optimization and distribute
+- `clang++ *.cpp -o tesserac -std=c++20 -O3` here -03 flag does some LLVM optimization which parse and generates code faster
+- If you are on Intel mac then run this instead `clang++ *.cpp -o tesserac -std=c++20 -O3 -arch arm64 -arch x86_64`
+- `strip ./tesserac` removes meta data and makes the compiler size significantly smaller 
+- You may sign the build but its useless if you dont have an Apple Developer License (100 dollars 💰)
 
 # Features 
 ### Implementation of Compiler Design
@@ -36,23 +62,22 @@ It tokenizes, parses and compiles  syntax directly into native Apple Silicon (AR
 
 
 ## Syntax
-`
+```
 int a = 5;
 print a
 
 int b = a + 10;
 print b;
-`
+```
 
 
-
-`
+```
 fn sum(int a, int b) {
     return a+b;
 }
 
 print fn(10, 20);
-`
+```
 
 ## builtin keywords
 - int, float, string  --> to create variable of same data type
@@ -70,17 +95,6 @@ fn sum(int a, int b) {
 
 # For Technical Deatils and my journey while building this 
 please read devLog.md,   [Link](devLog.md)
-
-
-
-# How to Run/Test
-# 1. Download the executable from the release section
-
-# 2. Build locally
-- clone the repo
-- cd to root directory
-- then run `clang++ *.cpp -o tesserac -std=c++20` to build the code
-- then run `./tesserac <file.ash>`
 
 
 
