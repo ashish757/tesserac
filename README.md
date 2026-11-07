@@ -1,6 +1,8 @@
 # TesseraC Compiler
 A compiler for simple programing language Ash (i created it), written in C++ for ARM64 (will support x86_64 in future version)
 
+![Screenshot 2026-11-07 at 4.14.09 PM.png](img.png)
+
 It tokenizes, parses and compiles  syntax directly into native Apple Silicon (ARM64) assembly
 
 > You can find some code examples at the bottom of this document, the language is relly simple so i am not gogin to write a documentation the examples in the end are enoguh
@@ -14,7 +16,7 @@ It tokenizes, parses and compiles  syntax directly into native Apple Silicon (AR
 
 # How to Run/Test
 
-# Run & Test Quickly
+## Run & Test Quickly
 - download the executable from the releases section https://github.com/ashish757/tesserac/releases 
 
 ### Note
@@ -26,7 +28,7 @@ It tokenizes, parses and compiles  syntax directly into native Apple Silicon (AR
 3. form there you will be ablt to run the applicaiton anyway
 > I checkout there is not solution to this problem only thing that can i be down it $100 apple developer certificate, which i am not gogin to buy
 
-# 2. To Run & Build locally
+## 2. To Run & Build locally
 - clone the repo
 - cd to root directory
 - then run `clang++ *.cpp -o tesserac -std=c++20` to build the code
@@ -37,6 +39,10 @@ It tokenizes, parses and compiles  syntax directly into native Apple Silicon (AR
 - If you are on Intel mac then run this instead `clang++ *.cpp -o tesserac -std=c++20 -O3 -arch arm64 -arch x86_64`
 - `strip ./tesserac` removes meta data and makes the compiler size significantly smaller 
 - You may sign the build but its useless if you dont have an Apple Developer License (100 dollars 💰)
+
+## Flow
+- create a file .ash extension and copy paste one of the code examples given at the end of this file or you can write your own code if you spend some time to learn this 
+- then run to compile the code and run `./tesserac file.ash`
 
 # Features 
 ### Implementation of Compiler Design
