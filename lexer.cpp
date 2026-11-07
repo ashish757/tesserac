@@ -158,7 +158,7 @@ std::vector<Token> Lexer::tokenize() {
         }
         if (currentChar == '%') {
             generatedTokens.push_back({TokenType::modulo, "%"});
-            currentChar++;
+            currentIndex++;
             continue;
         }
         if (currentChar == '<') {
@@ -174,7 +174,7 @@ std::vector<Token> Lexer::tokenize() {
 
         if (currentChar == '&') {
             if (currentIndex + 1 < sourceCode.length() && sourceCode[currentIndex + 1] == '&') {
-                generatedTokens.push_back({TokenType::logicalAnd, "&"});
+                generatedTokens.push_back({TokenType::logicalAnd, "&&"});
                 currentIndex += 2;
                 continue;
             }
@@ -182,7 +182,7 @@ std::vector<Token> Lexer::tokenize() {
 
         if (currentChar == '|') {
             if (currentIndex + 1 < sourceCode.length() && sourceCode[currentIndex + 1] == '|') {
-                generatedTokens.push_back({TokenType::logicalOr, "|"});
+                generatedTokens.push_back({TokenType::logicalOr, "||"});
                 currentIndex += 2;
                 continue;
             }

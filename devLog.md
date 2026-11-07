@@ -259,3 +259,10 @@ anyways i am back and i completed some thigs and also implemented the static typ
 - wrote a readme, not complete yet
 
 > hopefully next time you hear form me i will be redy to ship this project, this ending of pixel just saddens me
+
+
+# Devlog 12, 7 November
+## Found Bugs while Testing and fixed them
+- Fixed some bugs relted to parsing, basically in one place i was incrementing the char itself rather then the index which tracks the char
+- added the missing condition of logical operator in Lexical Analyzer
+- there was problem with using the parenthesis around condition in while and if statements, fixed that by parsing accordingly

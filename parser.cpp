@@ -40,7 +40,6 @@ std::unique_ptr<AstNode> Parser::parsePrimary() {
             return parseFunctionCall(identifierName);
         }
 
-
         if (peekToken().type == TokenType::leftBracket) {
             consumeToken();
             std::unique_ptr<AstNode> indexExpr = parseExpression();
@@ -51,9 +50,21 @@ std::unique_ptr<AstNode> Parser::parsePrimary() {
         return std::make_unique<IdentifierNode>(identifierName);
     }
 
-    std::cerr << "Syntax Error: Expected an integer or variable\n";
-    exit(1);
+    if (peekToken().type == TokenType::leftParen) {
+        consumeToken();
+        std::unique_ptr<AstNode> expressionNode = parseExpression();
+
+        Token rightParenToken = consumeToken();
+        if (rightParenToken.type != TokenType::rightParen) {
+            throwError("Expected ')' to close grouped expression", rightParenToken);
+        }
+        return expressionNode;
+    }
+
+    throwError("Expected an integer, variable, or '('", peekToken());
+    return nullptr;
 }
+
 std::unique_ptr<AstNode> Parser::parseStatement() {
     if (peekToken().type == TokenType::intKeyword || peekToken().type == TokenType::floatKeyword || peekToken().type == TokenType::stringKeyword ) {
         return parseVarStatement();
