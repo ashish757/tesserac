@@ -116,12 +116,12 @@ public:
 class FunctionDeclarationNode: public AstNode {
 public:
     std::string functionName;
-    std::vector<std::string> parameters;
+    std::vector<std::pair<std::string, std::string>> parameters;
     std::unique_ptr<BlockNode> body;
 
     FunctionDeclarationNode(
         std::string name,
-        std::vector<std::string> params,
+        std::vector<std::pair<std::string, std::string>> params,
         std::unique_ptr<BlockNode> block)
     : functionName(std::move(name)), parameters(std::move(params)), body(std::move(block)) {}
 

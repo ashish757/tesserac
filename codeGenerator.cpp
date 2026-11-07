@@ -167,28 +167,30 @@ void CodeGenerator::generateNode(const AstNode* node) {
             assemblyCode += "    ldr w0, [x29, #-" + std::to_string(variableContext.offset) + "]\n";
         }
 
-    } else if (const auto* printNode = dynamic_cast<const PrintStatementNode*>(node)) {
-        generateNode(printNode->expressionNode.get());
-        std::string expressionType = determineDataType(printNode->expressionNode.get());
+      } else if (const auto* printNode = dynamic_cast<const PrintStatementNode*>(node)) {
+          generateNode(printNode->expressionNode.get());
+          std::string expressionType = determineDataType(printNode->expressionNode.get());
 
-        if (expressionType == "float") {
-            assemblyCode += "    adrp x0, floatFormatString@PAGE\n";
-            assemblyCode += "    add x0, x0, floatFormatString@PAGEOFF\n";
-            assemblyCode += "    bl _printf\n";
-        }
-        else if (expressionType == "string") {
-            assemblyCode += "    mov x1,  x0\n";
-            assemblyCode += "    adrp x0, stringFormatString@PAGE\n";
-            assemblyCode += "    add x0, x0, stringFormatString@PAGEOFF\n";
-            assemblyCode += "    bl _printf\n";
-        }
-        else {
-            assemblyCode += "    mov w1, w0\n";
-            assemblyCode += "    adrp x0, formatString@PAGE\n";
-            assemblyCode += "    add x0, x0, formatString@PAGEOFF\n";
-            assemblyCode += "    bl _printf\n";
-        }
-    } else if (const auto* assignNode = dynamic_cast<const AssignmentNode*>(node)) {
+          if (expressionType == "float") {
+              assemblyCode += "    str d0, [sp]\n";
+              assemblyCode += "    adrp x0, floatFormatString@PAGE\n";
+              assemblyCode += "    add x0, x0, floatFormatString@PAGEOFF\n";
+              assemblyCode += "    bl _printf\n";
+          }
+          else if (expressionType == "string") {
+              assemblyCode += "    str x0, [sp]\n";
+              assemblyCode += "    adrp x0, stringFormatString@PAGE\n";
+              assemblyCode += "    add x0, x0, stringFormatString@PAGEOFF\n";
+              assemblyCode += "    bl _printf\n";
+          }
+          else {
+              assemblyCode += "    sxtw x1, w0\n";
+              assemblyCode += "    str x1, [sp]\n";
+              assemblyCode += "    adrp x0, formatString@PAGE\n";
+              assemblyCode += "    add x0, x0, formatString@PAGEOFF\n";
+              assemblyCode += "    bl _printf\n";
+          }
+      } else if (const auto* assignNode = dynamic_cast<const AssignmentNode*>(node)) {
         generateNode(assignNode->expressionNode.get());
 
         VariableContext variableContext = resolveVariable(assignNode->variableName);
@@ -279,44 +281,69 @@ void CodeGenerator::generateNode(const AstNode* node) {
 
         assemblyCode += "    b " + skipLabel + "\n";
         assemblyCode += "_" + fnNode->functionName + ":\n";
+
         assemblyCode += "    stp x29, x30, [sp, #-16]!\n";
         assemblyCode += "    mov x29, sp\n";
+
+        assemblyCode += "    sub sp, sp, #256\n";
 
         environmentStack.push_back(std::unordered_map<std::string, VariableContext>());
         int previousOffset = currentStackOffset;
         currentStackOffset = 0;
 
         for (size_t i = 0; i < fnNode->parameters.size(); i++) {
-            currentStackOffset += 16;
-            environmentStack.back()[fnNode->parameters[i]] = {currentStackOffset, "int"};
+            std::string paramType = fnNode->parameters[i].first;
+            std::string paramName = fnNode->parameters[i].second;
 
-            assemblyCode += "    str w" + std::to_string(i) + ", [x29, #-" + std::to_string(currentStackOffset) + "]\n";
+            currentStackOffset += 16;
+            environmentStack.back()[paramName] = {currentStackOffset, paramType};
+
+            if (paramType == "string") {
+                assemblyCode += "    str x" + std::to_string(i) + ", [x29, #-" + std::to_string(currentStackOffset) + "]\n";
+            } else if (paramType == "float") {
+                assemblyCode += "    str d" + std::to_string(i) + ", [x29, #-" + std::to_string(currentStackOffset) + "]\n";
+            } else {
+                assemblyCode += "    str w" + std::to_string(i) + ", [x29, #-" + std::to_string(currentStackOffset) + "]\n";
+            }
         }
 
         generateNode(fnNode->body.get());
 
-        assemblyCode += "    movF sp, x29\n";
-        assemblyCode += "    ldp x29, x30, [sp], 16\n";
+        assemblyCode += "    mov sp, x29\n";
+        assemblyCode += "    ldp x29, x30, [sp], #16\n";
         assemblyCode += "    ret\n";
 
         environmentStack.pop_back();
         currentStackOffset = previousOffset;
         assemblyCode += skipLabel + ":\n";
-    } else if (const auto* callNode = dynamic_cast<const FunctionCallNode*>(node)) {
-        for (size_t i =0; i< callNode->arguments.size(); i++) {
-            generateNode(callNode->arguments[i].get());
+    }
+    else if (const auto* callNode = dynamic_cast<const FunctionCallNode*>(node)) {
+    for (size_t i = 0; i < callNode->arguments.size(); i++) {
+        generateNode(callNode->arguments[i].get());
+        std::string argType = determineDataType(callNode->arguments[i].get());
 
-            if (i > 0) {
-            assemblyCode += "    mov w" +  std::to_string(i) + ", w0\n";
-
-            }
+        if (argType == "string") {
+            assemblyCode += "    str x0, [sp, #-16]!\n";
+        } else if (argType == "float") {
+            assemblyCode += "    str d0, [sp, #-16]!\n";
+        } else {
+            assemblyCode += "    str w0, [sp, #-16]!\n";
         }
-        //
-        // for (int i = callNode->arguments.size()-1; i>=0; i--) {
-        //     assemblyCode += "    ldr w" + std::to_string(i) + ", [sp], 16\n";
-        // }
+    }
 
-        assemblyCode += "    bl _" + callNode->functionName + "\n";
+    for (int i = callNode->arguments.size() - 1; i >= 0; i--) {
+        std::string argType = determineDataType(callNode->arguments[i].get());
+
+        if (argType == "string") {
+            assemblyCode += "    ldr x" + std::to_string(i) + ", [sp], 16\n";
+        } else if (argType == "float") {
+            assemblyCode += "    ldr d" + std::to_string(i) + ", [sp], 16\n";
+        } else {
+            assemblyCode += "    ldr w" + std::to_string(i) + ", [sp], 16\n";
+        }
+    }
+
+    assemblyCode += "    bl _" + callNode->functionName + "\n";
     } else if (const auto* returnNode = dynamic_cast<const ReturnNode*>(node)) {
         if (returnNode->expressionNode) generateNode(returnNode->expressionNode.get());
 

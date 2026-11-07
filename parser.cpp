@@ -370,13 +370,18 @@ std::unique_ptr<AstNode> Parser::parseFunctionDeclaration() {
 
     consumeToken();
 
-    std::vector<std::string> parameters;
+    std::vector<std::pair<std::string, std::string>> parameters;
 
     if (peekToken().type != TokenType::rightParen) {
-        parameters.push_back(consumeToken().value);
+        std::string paramType = consumeToken().value;
+        std::string paramName = consumeToken().value;
+        parameters.push_back({paramType, paramName});
+
         while (peekToken().type == TokenType::comma) {
             consumeToken();
-            parameters.push_back(consumeToken().value);
+            paramType = consumeToken().value;
+            paramName = consumeToken().value;
+            parameters.push_back({paramType, paramName});
         }
     }
      consumeToken();

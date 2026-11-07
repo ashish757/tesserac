@@ -246,3 +246,16 @@ anyways i am back and i completed some thigs and also implemented the static typ
 
 ## some complex datatype 
 - like `Dictonary in python` or `Struct on CPP` or `Objects in JavaScript`.
+
+
+# Devlog 11, 7 November
+- just heard the news of pixl.hackclub.com is ending way early from planned date
+- so i will be wrapping it up soon
+
+### well i wanted to test some edge cases before sumiting for review
+- and guess what everythign breaks, 
+- i fixed the print statement just now, the problem was that i wrote the code for ARM64 in general but apple moved from general arm64 to somehtign of its own which is a bit different from arm64
+- also the functions are breaking i will fix that as well and do some more testing
+- wrote a readme, not complete yet
+
+> hopefully next time you hear form me i will be redy to ship this project, this ending of pixel just saddens me

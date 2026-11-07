@@ -1,7 +1,6 @@
-int sequence[3];
+fn sum(int a, int b, string c) {
+    print c;
+    return a+b;
+}
 
-sequence[0] = 10;
-sequence[1] = 20
-sequence[2] = 30;
-
-print sequence[0];
+print sum(123, 10, "something");
